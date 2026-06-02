@@ -116,7 +116,7 @@ def build(history, target_date=None):
     P = []
     P.append(f"""<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Аналитика ЕДДС · динамика</title>
+<title>Аналитика ЕДДС · динамика</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2301696F'/%3E%3Cpath d='M32 8 L52 16 V32 C52 45 43 53 32 57 C21 53 12 45 12 32 V16 Z' fill='%23ffffff'/%3E%3Cpath d='M30 18 h4 v10 h10 v4 h-10 v10 h-4 v-10 h-10 v-4 h10 z' fill='%2301696F'/%3E%3C/svg%3E">
 <style>
 :root{{--bg:#f4f6f9;--card:#fff;--ink:#1a2230;--muted:#6b7686;--line:#e3e8ef;
 --brand:#1b4f8a;--brand-soft:#eaf1fa;--red:#c0392b;--green:#1f7a4d;--amber:#c77700;}}
@@ -163,10 +163,10 @@ tr:last-child td{{border-bottom:none}}
 .group:last-child{{border-bottom:none}}
 .grp-title{{font-size:15px;margin:0 0 8px;color:var(--brand);font-weight:700}}
 .spoiler{{margin-top:8px}}
-.spoiler>summary{{cursor:pointer;font-size:13px;color:var(--brand);background:var(--brand-soft);padding:7px 13px;border-radius:8px;list-style:none;user-select:none;display:inline-block}}
+.spoiler>summary{{cursor:pointer;font-size:13px;color:var(--brand);background:var(--brand-soft);padding:7px 13px;border-radius:8px;list-style:none;user-select:none;display:inline-flex;align-items:center;gap:8px}}
 .spoiler>summary::-webkit-details-marker{{display:none}}
-.spoiler>summary::before{{content:"▸  ";font-size:11px}}
-.spoiler[open]>summary::before{{content:"▾  "}}
+.spoiler>summary::before{{content:'';flex:0 0 auto;width:0;height:0;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--brand);transition:transform .15s ease}}
+.spoiler[open]>summary::before{{transform:rotate(90deg)}}
 .spoiler[open]>summary{{margin-bottom:12px}}
 .spoiler-body{{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 20px}}
 @media(max-width:680px){{.spoiler-body{{grid-template-columns:1fr}}}}
