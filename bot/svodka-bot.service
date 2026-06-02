@@ -1,0 +1,23 @@
+[Unit]
+Description=Telegram-бот сводок ЕДДС Солнечногорска
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Пользователь, от которого работает бот (создадим в инструкции)
+User=svodka
+Group=svodka
+WorkingDirectory=/opt/svodka
+# Переменные окружения берём из файла .env
+EnvironmentFile=/opt/svodka/bot/.env
+# Запуск через venv
+ExecStart=/opt/svodka/venv/bin/python /opt/svodka/bot/svodka_bot.py
+Restart=always
+RestartSec=5
+# Чуть-чуть безопасности
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
