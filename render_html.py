@@ -177,6 +177,97 @@ def build_banner(history, date):
             '</div>' % (cls, esc(head), chips, esc(date)))
 
 
+# SVG-иконка "запах/экология" — нос с волнами запаха (без внешних зависимостей)
+NEVA_ICON = (
+    '<svg class="neva-ic" viewBox="0 0 24 24" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    '<path d="M5 9c0-3 2.2-5 5-5 2.4 0 3.6 1.3 4 2.6" stroke="#d9742b" '
+    'stroke-width="1.8" stroke-linecap="round"/>'
+    '<path d="M14 7c1.2 0 2 .9 2 2 0 1.6-1.4 2.4-1.4 4 0 1.3 1 2.4 2.4 2.4" '
+    'stroke="#d9742b" stroke-width="1.8" stroke-linecap="round"/>'
+    '<path d="M5.5 13.5c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" '
+    'stroke-width="1.6" stroke-linecap="round"/>'
+    '<path d="M5.5 17c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" '
+    'stroke-width="1.6" stroke-linecap="round"/>'
+    '</svg>'
+)
+
+
+def _neva_delta_text(history, date):
+    """Динамика neva_edds к вчера и к ср.7дн — рост = хуже (красный)."""
+    if not (history and compare and date):
+        return ""
+    cmp_all = compare(history, date, keys=["neva_edds"])
+    c = (cmp_all or {}).get("neva_edds")
+    if not c:
+        return ""
+    d1 = c.get("delta1")
+    if d1 is None:
+        arr = '<span class="d-flat">нет данных за вчера</span>'
+    elif d1 == 0:
+        arr = '<span class="d-flat">как вчера</span>'
+    else:
+        worse = d1 > 0  # больше жалоб = хуже
+        cls = "d-bad" if worse else "d-good"
+        symb = "\u25b2" if d1 > 0 else "\u25bc"
+        sign = "+" if d1 > 0 else ""
+        arr = '<span class="%s">%s %s%s к вчера</span>' % (cls, symb, sign, d1)
+    vs7 = c.get("vs_avg7"); a7 = c.get("avg7")
+    vs7txt = ""
+    if vs7 is not None and a7 is not None:
+        if vs7 == 0:
+            vs7txt = ' \u00b7 как обычно'
+        else:
+            wc = "d-bad" if vs7 > 0 else "d-good"
+            vs7txt = ' \u00b7 <span class="%s">%s%s к ср.7дн</span>' % (wc, "+" if vs7 > 0 else "", vs7)
+    return '<div class="neva-dyn">%s%s</div>' % (arr, vs7txt)
+
+
+def build_neva_card(data, mask, history, date):
+    """Плашка «Обращения по КПО Нева» вверху сводки."""
+    neva = data.get("neva", {})
+    edds_n = int(neva.get("edds_count", 0) or 0)
+    eco_n = neva.get("hotline_eco_count")
+    items = neva.get("edds_items", [])
+    dyn = _neva_delta_text(history, date)
+
+    # список обращений (с маскированием ПДн)
+    if items:
+        lis = "".join(
+            '<li><span class="nt">%s</span> — %s</li>' % (
+                esc(it.get("datetime", "").strip()),
+                esc(mask_pii(it.get("desc", ""), mask)),
+            )
+            for it in items
+        )
+        listing = '<ul class="neva-list">%s</ul>' % lis
+    elif edds_n == 0:
+        listing = '<div class="neva-zero">За сутки обращений по запаху с КПО «Нева» на ЕДДС не поступало.</div>'
+    else:
+        listing = ""
+
+    eco_pill = ""
+    if eco_n is not None:
+        eco_pill = (
+            '<div class="neva-pill ctx"><div class="pv">%s</div>'
+            '<div class="pl">«Экология» на горячей линии Главы<br><i>справочно, без детализации</i></div></div>'
+            % esc(eco_n)
+        )
+
+    return (
+        '<div class="neva-card">'
+        '<div class="neva-top">%s<div class="neva-h">Обращения по запаху с КПО «Нева»</div></div>'
+        '<div class="neva-nums">'
+        '<div class="neva-pill"><div class="pv">%s</div><div class="pl">На ЕДДС (поимённые обращения)</div></div>'
+        '%s'
+        '</div>'
+        '%s'
+        '%s'
+        '<div class="neva-sub">Считаются только детальные обращения раздела ЕДДС (подраздел «Экология») с упоминанием «Нева». Показатель горячей линии дан для контекста и не приравнивается к «Нева».</div>'
+        '</div>'
+    ) % (NEVA_ICON, esc(edds_n), eco_pill, dyn, listing)
+
+
 def build(data, mask=False, history=None):
     h = data.get("header", {})
     meta = data.get("meta", {})
@@ -320,6 +411,23 @@ section.card > h2 {{ margin:0 0 14px; font-size:18px; color:var(--brand);
 .info-note .info-ul {{ margin:0; padding-left:18px; font-size:14px; color:var(--ink); }}
 .info-note .info-ul li {{ margin:2px 0; }}
 .info-note .info-sub {{ font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }}
+.neva-card {{ margin:16px 0 6px; background:#fdf3ec; border:1px solid #f0cdb4;
+  border-left:5px solid #d9742b; border-radius:12px; padding:15px 18px; }}
+.neva-card .neva-top {{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }}
+.neva-card .neva-ic {{ flex:0 0 auto; width:30px; height:30px; }}
+.neva-card .neva-h {{ font-weight:800; font-size:15.5px; color:#9c4a12; }}
+.neva-card .neva-nums {{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:6px; }}
+.neva-card .neva-pill {{ background:#fff; border:1px solid #f0cdb4; border-radius:10px;
+  padding:9px 14px; min-width:120px; }}
+.neva-card .neva-pill .pv {{ font-size:24px; font-weight:800; color:#c4571a; line-height:1; }}
+.neva-card .neva-pill .pl {{ font-size:12px; color:#7a6a5d; margin-top:4px; }}
+.neva-card .neva-pill.ctx .pv {{ color:#9a8576; }}
+.neva-card .neva-list {{ margin:8px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink); }}
+.neva-card .neva-list li {{ margin:3px 0; }}
+.neva-card .neva-list .nt {{ color:#9c4a12; font-weight:600; }}
+.neva-card .neva-sub {{ font-size:12px; color:#8a7a6d; margin-top:8px; font-style:italic; }}
+.neva-card .neva-zero {{ font-size:14px; color:#5a7a5a; }}
+.neva-card .neva-dyn {{ font-size:13.5px; margin-top:2px; }}
 table {{ width:100%; border-collapse:collapse; font-size:14px; }}
 th, td {{ text-align:left; padding:9px 11px; border-bottom:1px solid var(--line);
   vertical-align:top; }}
@@ -425,6 +533,9 @@ details.det[open] > summary::before {{ transform:rotate(90deg); }}
   <div class="metric green"><div class="v">{esc(spas_total)}</div><div class="l">Выездов СОЛН СПАС</div></div>
 </div>
 """)
+
+    # плашка «Нева» (всегда показываем, даже при нуле)
+    parts.append(build_neva_card(data, mask, history, date))
 
     # баннер динамики (если есть история)
     banner = build_banner(history, date) if history is not None else ""
