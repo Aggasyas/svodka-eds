@@ -4,6 +4,10 @@
 принимает `.docx`, собирает HTML и публикует сводки в интернет по постоянному
 адресу на GitHub Pages.
 
+> Эта версия учитывает все правки, сделанные в ходе реальной настройки:
+> публикация из папки `/docs`, защита `.env` через `.gitignore`, починка
+> «dubious ownership», стратегия слияния git и настройка `SITE_DIR`.
+
 **Схема, которую настраиваем:**
 
 ```
@@ -29,6 +33,12 @@
 
 Если на каком-то шаге застрянете — пришлите мне вывод команды, разберём.
 
+**Итоговый адрес сайта:**
+
+```
+https://aggasyas.github.io/svodka-eds/
+```
+
 ---
 
 ## ШАГ 1. Создаём LXC-контейнер в Proxmox
@@ -51,12 +61,11 @@
 - **General:**
   - Hostname: `svodka-bot`
   - Password: придумайте пароль root (запишите!).
-  - Снимите галочку «Unprivileged container»? — НЕТ, оставьте галочку **включённой**
-    (unprivileged — это безопаснее, нам подходит).
+  - Галочку «Unprivileged container» оставьте **включённой** (так безопаснее).
 - **Template:** выберите скачанный `debian-12-standard`.
 - **Disks:** 4 GB достаточно.
 - **CPU:** 1 ядро.
-- **Memory:** 1024 MB (можно 512, но с запасом лучше 1024).
+- **Memory:** 1024 MB.
 - **Network:**
   - Bridge: `vmbr0` (как у остальных машин).
   - IPv4: **DHCP** (проще всего — роутер сам выдаст адрес).
@@ -68,18 +77,34 @@
 В Proxmox выберите контейнер `svodka-bot` слева → кнопка **Console** (или **Shell**).
 Логин: `root`, пароль — тот, что задали.
 
+> **Про SSH (важно).** В минимальном шаблоне Debian 12 в LXC по умолчанию:
+> вход root по паролю заблокирован (`PermitRootLogin prohibit-password`), а
+> часто и сам SSH-сервер не установлен. **Для настройки и работы бота SSH не
+> нужен** — всё делаем прямо в консоли Proxmox. Если всё же хотите SSH, см.
+> приложение «SSH (по желанию)» в конце.
+>
+> Удобный приём: открыть **Shell у самой ноды Proxmox** и зайти в контейнер
+> командой `pct enter НОМЕР` (например `pct enter 101`) — пароль не спросит,
+> и копипаст работает лучше, чем во встроенной консоли.
+
 Дальше все команды выполняем **внутри этой консоли контейнера**.
 
 ---
 
 ## ШАГ 2. Готовим систему внутри контейнера
 
-Скопируйте и выполните блоками (можно весь блок сразу):
+Скопируйте и выполните (можно блоком):
 
 ```bash
 apt update && apt -y upgrade
-apt -y install python3 python3-venv python3-pip git nano
+apt -y install sudo python3 python3-venv python3-pip git nano unzip curl
 ```
+
+> На чистом Debian 12 в шаблоне LXC часто **нет даже `sudo`**, а также
+> отсутствуют `curl` и `unzip` — поэтому ставим их сразу первой же командой,
+> иначе позже команды вида `sudo -u svodka ...` будут падать с ошибкой
+> «command not found». Эту команду выполняем от `root` (внутри `pct enter`
+> вы и так root, `sudo` тут не нужен).
 
 Создадим отдельного пользователя для бота (чтобы не работать от root):
 
@@ -91,148 +116,174 @@ chown -R svodka:svodka /opt/svodka
 
 ---
 
-## ШАГ 3. Кладём код бота и пайплайна
+## ШАГ 3. Готовим репозиторий на GitHub (постоянный адрес)
 
-Я подготовил для вас архив со всеми файлами (`svodka-bot.zip`).
-Внутри: код бота, пайплайн (parse/metrics/render), история, готовый сайт.
+Это даёт постоянный адрес сайта и HTTPS, и дома не надо открывать порты.
 
-**Вариант А — через GitHub (рекомендую, заодно настроим публикацию).**
-Сначала сделаем ШАГ 4 (репозиторий), потом вернёмся сюда. Перейдите к ШАГУ 4,
-а затем выполните клонирование (подскажу там).
+### 3.1. Создаём репозиторий
 
-**Вариант Б — закинуть архив вручную** (если пока без GitHub):
-загрузите `svodka-bot.zip` в контейнер (например, через `scp` с вашего ПК) в
-`/opt/svodka`, затем:
+1. Зайдите на github.com под логином **Aggasyas**.
+2. Справа вверху **+** → **New repository**.
+3. Имя репозитория: `svodka-eds`.
+4. Тип: **Public** (для бесплатного GitHub Pages нужен публичный). Персональные
+   данные маскируются (`MASK_PII=1`), поэтому публичность безопасна
+   (подробнее — раздел «Про персональные данные»).
+5. Не добавляйте README/лицензию — оставьте пустым. **Create repository**.
 
-```bash
-cd /opt/svodka
-apt -y install unzip
-unzip svodka-bot.zip
-chown -R svodka:svodka /opt/svodka
-```
+### 3.2. Делаем токен для пуша из контейнера
 
-После распаковки структура должна быть такой:
+Боту нужно право пушить в репозиторий без ввода пароля.
+
+1. GitHub → ваш аватар → **Settings** → внизу слева **Developer settings**.
+2. **Personal access tokens** → **Tokens (classic)** → **Generate new token (classic)**.
+3. Note: `svodka-bot`. Expiration: на ваше усмотрение.
+4. Отметьте галочку **repo** (полный доступ к репозиториям).
+5. **Generate token** → **СКОПИРУЙТЕ токен** (он показывается один раз!).
+
+---
+
+## ШАГ 4. Кладём код в контейнер и подключаем GitHub
+
+Я готовлю архив `svodka-bot.zip`. Внутри: код бота, пайплайн
+(parse/metrics/render) и история. **Готовый сайт в архив не входит** — страницы
+генерирует сам бот при первой сводке.
+
+Структура после распаковки:
 
 ```
 /opt/svodka/
   build_all.py  parse_svodka.py  metrics.py
   render_html.py  render_analytics.py  render_index.py
   history.jsonl
-  site/                 (index.html, svodka-*.html, analytics-*.html)
   bot/
-    svodka_bot.py  requirements.txt  .env.example  svodka-bot.service
+    svodka_bot.py  requirements.txt  .env.example  svodka-bot.service  INSTRUKCIYA.md
 ```
 
----
+> Важно: **репозиторий = сама папка `/opt/svodka`** (клонируем/инициализируем
+> git прямо в ней, без вложенной подпапки). Это влияет на пути в `.env`.
 
-## ШАГ 4. Готовим репозиторий на GitHub (постоянный адрес)
+### 4.1. Загружаем и распаковываем архив
 
-Это даст постоянный адрес сайта и HTTPS, и дома не надо открывать порты.
-
-### 4.1. Создаём репозиторий
-
-1. Зайдите на github.com под логином **Aggasyas**.
-2. Справа вверху **+** → **New repository**.
-3. Имя репозитория: `svodka-eds`.
-4. Тип: **Public** (для GitHub Pages нужен публичный). Персональные
-   данные будут замаскированы (`MASK_PII=1`), так что публичность — это нормально
-   (подробнее — раздел «Про персональные данные» ниже).
-5. Не добавляйте README/лицензию — оставьте пустым. **Create repository**.
-
-Адрес сайта в итоге будет:
-
-```
-https://aggasyas.github.io/svodka-eds/
-```
-
-### 4.2. Делаем токен для пуша из контейнера
-
-Боту нужно право пушить в репозиторий без ввода пароля.
-
-1. GitHub → ваш аватар → **Settings** → внизу слева **Developer settings**.
-2. **Personal access tokens** → **Tokens (classic)** → **Generate new token (classic)**.
-3. Note: `svodka-bot`. Expiration: на ваше усмотрение (можно «No expiration»).
-4. Отметьте галочку **repo** (полный доступ к репозиториям).
-5. **Generate token** → **СКОПИРУЙТЕ токен** (он показывается один раз!).
-
-### 4.3. Клонируем репозиторий в контейнер и кладём код
-
-Выполняем в консоли контейнера **от пользователя svodka**:
-
-```bash
-su - svodka
-cd /opt/svodka
-git config --global user.name  "Svodka Bot"
-git config --global user.email "bot@svodka.local"
-```
-
-Теперь поместим файлы пайплайна и бота внутрь репозитория. Если вы выбрали
-**Вариант Б** (распаковали zip в /opt/svodka) — просто инициализируем git прямо тут:
+Закиньте `svodka-bot.zip` в `/opt/svodka` (через консоль Proxmox: можно
+перетащить файл, либо `scp` с ПК). Затем:
 
 ```bash
 cd /opt/svodka
-git init
-git branch -M main
-git remote add origin https://github.com/Aggasyas/svodka-eds.git
-git add .
-git commit -m "Первая публикация: пайплайн, бот, готовый сайт"
+unzip svodka-bot.zip
+chown -R svodka:svodka /opt/svodka
 ```
 
-Чтобы пуш не спрашивал пароль, вшиваем токен в адрес origin (ВСТАВЬТЕ свой токен
-вместо `ВАШ_ТОКЕН`):
+### 4.2. Инициализируем git и привязываем к GitHub
+
+Все git-команды выполняем **от пользователя svodka** (под ним работает бот):
 
 ```bash
-git remote set-url origin https://Aggasyas:ВАШ_ТОКЕН@github.com/Aggasyas/svodka-eds.git
-git push -u origin main
+sudo -u svodka git config --global user.name  "svodka-bot"
+sudo -u svodka git config --global user.email "agastos1980@gmail.com"
+# критично: разрешаем git работать с папкой, которой владеет другой пользователь
+sudo -u svodka git config --global --add safe.directory /opt/svodka
+# стратегия слияния (чтобы бот не спотыкался на расхождении веток)
+sudo -u svodka git config --global pull.rebase false
 ```
 
-> ⚠️ Токен хранится локально в `.git/config` контейнера. Контейнер домашний и
-> закрытый — это приемлемо. Не публикуйте этот токен нигде.
+> Без `safe.directory` git выдаёт `fatal: detected dubious ownership` и
+> молча не пушит — бот напишет «опубликовано», а файлы не уедут. Эта строка
+> обязательна.
 
-### 4.4. Включаем GitHub Pages
+### 4.3. Защищаем секреты (.gitignore) — ОБЯЗАТЕЛЬНО
+
+Репозиторий **публичный**. Нельзя допустить попадания `.env` (там токены!),
+виртуального окружения и кэша. Создаём `.gitignore` ещё до первого коммита:
+
+```bash
+cd /opt/svodka
+cat > .gitignore <<'EOF'
+venv/
+__pycache__/
+*.pyc
+bot/.env
+.env
+EOF
+chown svodka:svodka .gitignore
+```
+
+### 4.4. Первый коммит и пуш
+
+```bash
+cd /opt/svodka
+sudo -u svodka git init
+sudo -u svodka git branch -M main
+sudo -u svodka git remote add origin https://Aggasyas:ВАШ_ТОКЕН@github.com/Aggasyas/svodka-eds.git
+sudo -u svodka git add .
+sudo -u svodka git commit -m "Первая публикация: пайплайн и бот"
+sudo -u svodka git push -u origin main
+```
+
+Вместо `ВАШ_ТОКЕН` подставьте токен из шага 3.2.
+
+Проверьте, что в `git status` НЕ числятся `.env` и `venv` (должно быть чисто):
+
+```bash
+sudo -u svodka git status --short
+```
+
+> Токен вшит в адрес origin в `.git/config` контейнера. Контейнер домашний и
+> закрытый — это приемлемо. Сам файл `.git/config` в репозиторий не попадает.
+
+### 4.5. Включаем GitHub Pages из папки `/docs`
+
+> ⚠️ **Важно:** GitHub Pages умеет публиковать **только из корня `/` или из
+> папки `/docs`**. Папка `/site` НЕ поддерживается — её в списке не будет.
+> Поэтому используем `/docs`.
 
 1. На GitHub откройте репозиторий `svodka-eds` → **Settings** → слева **Pages**.
 2. **Source:** Deploy from a branch.
-3. **Branch:** `main`, папка **`/site`** → **Save**.
+3. **Branch:** `main`, папка **`/docs`** → **Save**.
 4. Через 1–2 минуты сайт станет доступен по адресу
    `https://aggasyas.github.io/svodka-eds/`.
-   (Первый раз может потребоваться обновить страницу через минуту.)
 
-> Сайт лежит в подпапке `/site`, поэтому в настройках Pages выбираем именно её.
+Если в списке папок пусто (репозиторий ещё без `docs/`) — не страшно: бот
+создаст `docs/` при первой сводке, после чего папку можно будет выбрать.
+Либо заранее создайте заглушку:
+
+```bash
+cd /opt/svodka
+mkdir -p docs
+echo '<!doctype html><meta charset="utf-8"><h1>Сводки ЕДДС — настраивается…</h1>' > docs/index.html
+sudo -u svodka git add docs/index.html
+sudo -u svodka git commit -m "init docs"
+sudo -u svodka git push
+```
 
 ---
 
 ## ШАГ 5. Ставим Python-зависимости
 
-Всё ещё от пользователя `svodka` (если вышли — снова `su - svodka`):
+От пользователя svodka:
 
 ```bash
 cd /opt/svodka
-python3 -m venv venv
-. venv/bin/activate
-pip install --upgrade pip
-pip install -r bot/requirements.txt
+sudo -u svodka python3 -m venv venv
+sudo -u svodka ./venv/bin/pip install --upgrade pip
+sudo -u svodka ./venv/bin/pip install -r bot/requirements.txt
 ```
-
-Проверим, что пайплайн в порядке (соберём сайт из уже имеющейся сводки заново —
-ничего не сломается, операция идемпотентная). Для теста нужен сам .docx; если
-его нет в контейнере — пропустите эту проверку, бот соберёт всё при первом файле.
 
 ---
 
-## ШАГ 6. Настраиваем бота: токен и доступ
+## ШАГ 6. Настраиваем бота: токен, доступ и пути
 
 ### 6.1. Получаем токен бота у @BotFather
 
 1. В Telegram найдите **@BotFather** → `/start`.
-2. `/newbot` → задайте имя (например, «Сводки ЕДДС») и username
+2. `/newbot` → задайте имя («Сводки ЕДДС») и username
    (например, `svodka_edds_bot` — должен заканчиваться на `bot`).
-3. BotFather пришлёт **токен** вида `123456789:AAE...`. Скопируйте.
+3. BotFather пришлёт **токен** вида `123456789:AAE...` (~46 символов, с
+   двоеточием). Скопируйте.
 
 ### 6.2. Узнаём свой Telegram ID
 
 Напишите боту **@userinfobot** — он ответит вашим числовым `Id`. Запишите.
-Только этому id будет разрешено пользоваться ботом.
+Только этому id будет разрешено публиковать сводки.
 
 ### 6.3. Заполняем .env
 
@@ -242,21 +293,41 @@ cp .env.example .env
 nano .env
 ```
 
-Заполните:
+Заполните **все** поля (не оставляйте значения-примеры!):
 
-- `BOT_TOKEN=` — токен от BotFather.
-- `ALLOWED_IDS=` — ваш id из @userinfobot (можно несколько через запятую).
-- `PAGES_URL=https://aggasyas.github.io/svodka-eds`
+```
+BOT_TOKEN=токен_от_BotFather
+ALLOWED_IDS=ваш_id_из_userinfobot
+PAGES_URL=https://aggasyas.github.io/svodka-eds
+SITE_DIR=/opt/svodka/docs
+GIT_REPO_DIR=/opt/svodka
+MASK_PII=1
+```
+
+> - `SITE_DIR=/opt/svodka/docs` — **обязательно**: бот пишет страницы в `docs`,
+>   именно оттуда читает GitHub Pages. По умолчанию бот пишет в `site` — а это
+>   не сработает с Pages, поэтому переопределяем.
+> - `GIT_REPO_DIR=/opt/svodka` — корень репозитория (для пуша).
+> - `MASK_PII=1` — маскировка персональных данных (репозиторий публичный).
 
 Сохранить в nano: `Ctrl+O`, Enter, затем `Ctrl+X`.
+
+### 6.4. Проверяем токен ДО запуска (без curl зависимостей)
+
+```bash
+cd /opt/svodka
+TOKEN=$(grep '^BOT_TOKEN=' bot/.env | cut -d= -f2- | tr -d '\n\r" ')
+echo "$TOKEN" | venv/bin/python -c "import sys,urllib.request,json; t=sys.stdin.read().strip(); d=json.load(urllib.request.urlopen(f'https://api.telegram.org/bot{t}/getMe')); print('OK:', d['ok'], '| бот:', d['result']['username'])"
+```
+
+Ожидаем `OK: True | бот: ваш_username`. Если `Not Found`/`Unauthorized` —
+токен неверный (часто остаётся значение-пример), исправьте `.env`.
 
 ---
 
 ## ШАГ 7. Запускаем бота как сервис (автозапуск)
 
-Чтобы бот работал постоянно и сам поднимался после перезагрузки — оформим его
-сервисом systemd. Эти команды — **от root** (выйдите из svodka командой `exit`,
-если вы под ним):
+Команды **от root** (выйдите из svodka, если вы под ним):
 
 ```bash
 cp /opt/svodka/bot/svodka-bot.service /etc/systemd/system/svodka-bot.service
@@ -265,28 +336,29 @@ systemctl enable svodka-bot
 systemctl start svodka-bot
 ```
 
-Проверяем, что запустился:
+Проверяем:
 
 ```bash
 systemctl status svodka-bot --no-pager
 journalctl -u svodka-bot -n 30 --no-pager
 ```
 
-В логе должна быть строка «Бот запускается. Pages: …». Если есть ошибка —
-скопируйте её мне.
+В логе должна быть строка вида:
+`Бот запускается. Pages: … | site: /opt/svodka/docs | history: …`
+и `Run polling for bot @svodka_edds_bot`. Сервис должен оставаться
+`active (running)` и не падать. Если есть ошибка — скопируйте её мне.
 
 ---
 
-## ШАГ 8. Проверка
+## ШАГ 8. Проверка полного цикла
 
 1. В Telegram откройте своего бота → `/start`. Должна прийти справка.
-2. `/last` — покажет ссылку на уже имеющуюся сводку и динамику.
+   (Если бот молчит — ваш id не в `ALLOWED_IDS`, см. раздел проблем.)
+2. `/last` — ссылка на последнюю сводку и динамика.
 3. Пришлите боту реальный `.docx` со сводкой. Через несколько секунд бот ответит:
-   - ссылкой на сводку,
-   - ссылкой на аналитику,
-   - ссылкой на архив,
-   - краткой динамикой (▲/▼ к вчера).
-4. Откройте ссылку — сводка должна быть опубликована на GitHub Pages.
+   ссылкой на сводку, на аналитику, на архив и краткой динамикой (▲/▼ к вчера).
+4. Откройте ссылку — сводка должна открыться на GitHub Pages (дайте Pages
+   1–2 минуты на пересборку; на телефоне обновите с очисткой кэша).
 
 Готово. Теперь каждое утро вы просто пересылаете боту docx из Макса/почты, а он
 сам всё собирает, ведёт историю и публикует.
@@ -305,28 +377,41 @@ journalctl -u svodka-bot -n 30 --no-pager
 
 ---
 
+## Обновление кода бота (когда пришлю новую версию)
+
+Код лежит в том же GitHub-репозитории. Чтобы подтянуть исправления на сервер:
+
+```bash
+cd /opt/svodka
+sudo -u svodka git pull --no-edit origin main
+systemctl restart svodka-bot
+```
+
+> Если `git pull` ругается на расхождение веток или конфликт `docs/` — выполните:
+> `sudo -u svodka git pull --no-edit --no-rebase -X ours origin main`
+> (берёт вашу свежую версию страниц), затем повторите restart.
+
+---
+
 ## Полезные команды обслуживания
 
 ```bash
 # Перезапустить бота (после правок .env или кода)
 systemctl restart svodka-bot
 
-# Смотреть логи в реальном времени
+# Логи в реальном времени
 journalctl -u svodka-bot -f
 
 # Остановить / запустить
 systemctl stop svodka-bot
 systemctl start svodka-bot
-
-# Обновить код бота (если пришлю новую версию):
-# заменили файлы в /opt/svodka → systemctl restart svodka-bot
 ```
 
 ---
 
 ## Про персональные данные (важно)
 
-GitHub Pages — **публичный** сайт, поэтому мы включили маскировку персональных
+GitHub Pages — **публичный** сайт, поэтому включена маскировка персональных
 данных (`MASK_PII=1` в `.env`). Что скрывается автоматически:
 
 - **телефоны** → `8-XXX-XXX-XX-XX`;
@@ -335,18 +420,57 @@ GitHub Pages — **публичный** сайт, поэтому мы включ
 
 Остаются: населённые пункты, улицы, все цифры и вся аналитика — смысл сводки
 полностью сохраняется. Если когда-нибудь захотите полностью приватный вариант
-(без маскировки, но за паролем на своём белом IP) — скажите, перенастроим.
+(без маскировки, но за паролем на своём IP) — скажите, перенастроим.
+
+---
+
+## Что бот считает технологическим нарушением
+
+Справочно-консультативные сообщения (например, «в течение суток в адрес ЕДДС
+поступило N сообщений справочного и консультативного характера») бот **не**
+учитывает как технологическое нарушение. Они выводятся отдельным
+информационным блоком на странице сводки, а счётчик нарушений их не считает.
+Если ЕДДС изменит формулировку — пришлите пример, добавлю в фильтр.
 
 ---
 
 ## Если что-то пошло не так
 
-- **Бот не отвечает** → `systemctl status svodka-bot` и `journalctl -u svodka-bot -n 50`.
-- **«Доступ запрещён»** → ваш id не совпал с `ALLOWED_IDS` в `.env`. Проверьте id
+- **Бот не отвечает на /start** → `systemctl status svodka-bot` и
+  `journalctl -u svodka-bot -n 50 --no-pager`.
+- **`TelegramNotFound: Not Found`** → неверный/пустой `BOT_TOKEN` в `.env`
+  (часто остаётся значение-пример). Проверьте токен командой из шага 6.4.
+- **«Доступ запрещён» / бот молчит** → ваш id не в `ALLOWED_IDS`. Проверьте id
   через @userinfobot, поправьте `.env`, `systemctl restart svodka-bot`.
-- **Публикация не удалась** → бот соберёт сводку локально, но в ответе будет
-  ошибка git. Чаще всего — неверный токен в origin (ШАГ 4.3) или нет интернета.
-- **Сайт не открывается** → проверьте, что в Settings → Pages выбрана ветка
-  `main` и папка `/site`; подождите 1–2 минуты после первого пуша.
+- **Бот пишет «опубликовано», но страницы нет (404)** → почти всегда git:
+  - `fatal: detected dubious ownership` → выполните шаг 4.2
+    (`safe.directory`).
+  - `non-fast-forward` / `divergent branches` → `sudo -u svodka git pull
+    --no-edit --no-rebase -X ours origin main`, затем `git push`.
+  - проверьте, что `SITE_DIR=/opt/svodka/docs` (бот должен писать в docs).
+- **Сайт не открывается** → в Settings → Pages должна быть ветка `main` и
+  папка **`/docs`** (не `/site`!); подождите 1–2 минуты после пуша; на телефоне
+  обновите с очисткой кэша.
 
 Любую ошибку присылайте мне дословно — подскажу, что поправить.
+
+---
+
+## Приложение. SSH в контейнере (по желанию)
+
+Для бота SSH не нужен — всё делается в консоли Proxmox. Но если хотите заходить
+по SSH с компьютера:
+
+```bash
+apt -y install openssh-server
+# разрешить вход root по паролю (в LXC по умолчанию запрещён)
+sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl enable ssh
+systemctl restart ssh
+# узнать IP контейнера
+ip -4 addr show | grep inet
+```
+
+> Безопаснее не открывать root по паролю, а заходить под пользователем `svodka`.
+> Если контейнер только в домашней сети за роутером (без проброса портов
+> наружу) — для удобства настройки это приемлемо.
