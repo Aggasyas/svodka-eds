@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аналитика ЕДДС · динамика</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1a2230;--muted:#6b7686;--line:#e3e8ef;
+--brand:#1b4f8a;--brand-soft:#eaf1fa;--red:#c0392b;--green:#1f7a4d;--amber:#c77700;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 64px}
+header.doc{background:var(--brand);color:#fff;border-radius:14px;padding:22px 26px}
+header.doc h1{margin:0 0 4px;font-size:23px}
+header.doc .sub{opacity:.9;font-size:14px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 2px}
+.nav a{font-size:13.5px;font-weight:600;color:var(--brand);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:8px 16px;border-radius:10px}
+.nav a.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.nav a:hover{background:#dbe7f7}
+.nav a.active:hover{background:var(--brand)}
+.verdict{margin-top:16px;border-radius:14px;padding:16px 20px;font-size:16px;font-weight:600}
+.verdict.bad{background:#fdeeec;color:var(--red);border:1px solid #f3cdc7}
+.verdict.good{background:#e9f7ef;color:var(--green);border:1px solid #c7ecd6}
+.verdict.neutral{background:var(--brand-soft);color:var(--brand);border:1px solid #cfe0f3}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi .l{font-size:12.5px;color:var(--muted)}
+.kpi .v{font-size:30px;font-weight:700;margin:4px 0 2px}
+.kpi .spark{width:100%;height:44px;display:block;margin-top:6px}
+.ar{font-size:13px;font-weight:700;display:inline-block}
+.ar.up-good,.ar.down-good{color:var(--green)}
+.ar.down-bad,.ar.up-bad{color:var(--red)}
+.ar.flat{color:var(--muted)}
+.cmp-line{font-size:12px;color:var(--muted);margin-top:4px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-top:16px}
+section.card>h2{margin:0 0 14px;font-size:18px;color:var(--brand);padding-bottom:10px;border-bottom:2px solid var(--brand-soft)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+th{background:#f7f9fc;color:var(--muted);font-size:12px;text-transform:uppercase}
+td.num,th.num{text-align:right}
+tr:last-child td{border-bottom:none}
+.bars{width:100%;height:auto;display:block}
+.metric-row td:first-child{font-weight:600}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tag.worse{background:#fdeeec;color:var(--red)} .tag.better{background:#e9f7ef;color:var(--green)}
+.tag.same{background:#eef2f7;color:var(--muted)}
+.chart-block{margin-bottom:8px}
+.chart-block h3{font-size:14px;margin:0 0 6px;color:var(--ink)}
+.group{padding:14px 0;border-bottom:1px solid var(--line)}
+.group:last-child{border-bottom:none}
+.grp-title{font-size:15px;margin:0 0 8px;color:var(--brand);font-weight:700}
+.spoiler{margin-top:8px}
+.spoiler>summary{cursor:pointer;font-size:13px;color:var(--brand);background:var(--brand-soft);padding:7px 13px;border-radius:8px;list-style:none;user-select:none;display:inline-block}
+.spoiler>summary::-webkit-details-marker{display:none}
+.spoiler>summary::before{content:"▸  ";font-size:11px}
+.spoiler[open]>summary::before{content:"▾  "}
+.spoiler[open]>summary{margin-bottom:12px}
+.spoiler-body{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 20px}
+@media(max-width:680px){.spoiler-body{grid-template-columns:1fr}}
+@media(max-width:680px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><div class="wrap">
+<header class="doc">
+<h1>Аналитика ЕДДС · динамика по дням</h1>
+<div class="sub">Данные на 02.06.2026 · история за 2 сут.</div>
+</header>
+<div class="nav"><a href="index.html">🗂 Все сводки</a><a href="svodka-2026-06-02.html">📄 Сводка за день</a><a class="active" href="analytics-2026-06-02.html">📊 Аналитика и динамика</a></div>
+<div class="verdict neutral">За сутки обстановка в пределах обычного.</div>
+<div class="kpis">
+<div class="kpi">
+<div class="l">Происшествий всего</div>
+<div class="v">7 <span class="ar up-good">▼ -4</span></div>
+<div class="cmp-line">ср.7дн 11 · чем обычно: <b style="color:#1f7a4d">-4</b></div>
+<svg viewBox="0 0 240 44" preserveAspectRatio="none" class="spark"><polygon points="0,44 0.0,6.0 240.0,40.0 240,44" fill="#c0392b" opacity="0.08"/><polyline points="0.0,6.0 240.0,40.0" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="240.0" cy="40.0" r="3" fill="#c0392b"/></svg>
+</div>
+<div class="kpi">
+<div class="l">Технологич. нарушения</div>
+<div class="v">8 <span class="ar up-good">▼ -6</span></div>
+<div class="cmp-line">ср.7дн 14 · чем обычно: <b style="color:#1f7a4d">-6</b></div>
+<svg viewBox="0 0 240 44" preserveAspectRatio="none" class="spark"><polygon points="0,44 0.0,6.0 240.0,40.0 240,44" fill="#c0392b" opacity="0.08"/><polyline points="0.0,6.0 240.0,40.0" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="240.0" cy="40.0" r="3" fill="#c0392b"/></svg>
+</div>
+<div class="kpi">
+<div class="l">Обращений граждан</div>
+<div class="v">153 <span class="ar down-bad">▲ +82</span></div>
+<div class="cmp-line">ср.7дн 71 · чем обычно: <b style="color:#c0392b">+82</b></div>
+<svg viewBox="0 0 240 44" preserveAspectRatio="none" class="spark"><polygon points="0,44 0.0,40.0 240.0,6.0 240,44" fill="#c0392b" opacity="0.08"/><polyline points="0.0,40.0 240.0,6.0" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="240.0" cy="6.0" r="3" fill="#c0392b"/></svg>
+</div>
+<div class="kpi">
+<div class="l">Вызовов по 112</div>
+<div class="v">730 <span class="ar down-bad">▲ +144</span></div>
+<div class="cmp-line">ср.7дн 586 · чем обычно: <b style="color:#c0392b">+144</b></div>
+<svg viewBox="0 0 240 44" preserveAspectRatio="none" class="spark"><polygon points="0,44 0.0,40.0 240.0,6.0 240,44" fill="#c0392b" opacity="0.08"/><polyline points="0.0,40.0 240.0,6.0" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="240.0" cy="6.0" r="3" fill="#c0392b"/></svg>
+</div>
+</div>
+<section class="card"><h2>Сравнение с предыдущими сутками</h2>
+<table><thead><tr><th>Показатель</th><th class="num">Сегодня</th><th class="num">Вчера</th><th class="num">Ср. 7 дн</th><th class="num">Ср. 30 дн</th><th>Оценка</th></tr></thead><tbody>
+<tr class="metric-row"><td>Происшествий всего</td><td class="num"><b>7</b></td><td class="num">11</td><td class="num">11</td><td class="num">11</td><td><span class="tag better">лучше</span></td></tr>
+<tr class="metric-row"><td>ДТП</td><td class="num"><b>1</b></td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td><span class="tag same">= вчера</span></td></tr>
+<tr class="metric-row"><td>С несовершеннолетними</td><td class="num"><b>2</b></td><td class="num">6</td><td class="num">6</td><td class="num">6</td><td><span class="tag better">лучше</span></td></tr>
+<tr class="metric-row"><td>БПЛА</td><td class="num"><b>0</b></td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td><span class="tag better">лучше</span></td></tr>
+<tr class="metric-row"><td>Технологич. нарушения</td><td class="num"><b>8</b></td><td class="num">14</td><td class="num">14</td><td class="num">14</td><td><span class="tag better">лучше</span></td></tr>
+<tr class="metric-row"><td>Нарушений в работе</td><td class="num"><b>2</b></td><td class="num">8</td><td class="num">8</td><td class="num">8</td><td><span class="tag better">лучше</span></td></tr>
+<tr class="metric-row"><td>Газ</td><td class="num"><b>4</b></td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>ХВС</td><td class="num"><b>0</b></td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>ГВС</td><td class="num"><b>1</b></td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>Экология</td><td class="num"><b>2</b></td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td><span class="tag same">= вчера</span></td></tr>
+<tr class="metric-row"><td>Обращений граждан</td><td class="num"><b>153</b></td><td class="num">71</td><td class="num">71</td><td class="num">71</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>Горячая линия (звонки)</td><td class="num"><b>77</b></td><td class="num">38</td><td class="num">38</td><td class="num">38</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>Вызовов по 112</td><td class="num"><b>730</b></td><td class="num">586</td><td class="num">586</td><td class="num">586</td><td><span class="tag worse">хуже</span></td></tr>
+<tr class="metric-row"><td>Выездов СОЛН СПАС</td><td class="num"><b>13</b></td><td class="num">11</td><td class="num">11</td><td class="num">11</td><td><span class="tag better">лучше</span></td></tr>
+</tbody></table></section>
+<section class="card"><h2>Динамика по дням (за 30 сут.)</h2>
+<div class="group"><h4 class="grp-title">Происшествия</h4>
+<div class="chart-block"><h3>Происшествий всего <span style="font-weight:400;color:#6b7686">— сегодня 7, ср.30дн 11</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 11</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="65.5" width="173.6" height="114.5" rx="2" fill="#c0392b" opacity="1"><title>02.06: 7</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div>
+<details class="spoiler"><summary>Подробнее — детализация (5)</summary><div class="spoiler-body"><div class="chart-block"><h3>ДТП <span style="font-weight:400;color:#6b7686">— сегодня 1, ср.30дн 1</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 1</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 1</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>С несовершеннолетними <span style="font-weight:400;color:#6b7686">— сегодня 2, ср.30дн 6</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 6</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="120.0" width="173.6" height="60.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 2</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Пожары/возгорания <span style="font-weight:400;color:#6b7686">— сегодня 1, ср.30дн 0</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="180.0" width="173.6" height="0.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 0</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 1</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>БПЛА <span style="font-weight:400;color:#6b7686">— сегодня 0, ср.30дн 1</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 1</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="180.0" width="173.6" height="0.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 0</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Прочие происшествия <span style="font-weight:400;color:#6b7686">— сегодня 1, ср.30дн 3</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 3</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="120.0" width="173.6" height="60.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 1</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div></div></details>
+</div>
+<div class="group"><h4 class="grp-title">Технологические нарушения</h4>
+<div class="chart-block"><h3>Технологич. нарушения <span style="font-weight:400;color:#6b7686">— сегодня 8, ср.30дн 14</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 14</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="77.1" width="173.6" height="102.9" rx="2" fill="#c0392b" opacity="1"><title>02.06: 8</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div>
+<details class="spoiler"><summary>Подробнее — детализация (7)</summary><div class="spoiler-body"><div class="chart-block"><h3>Нарушений в работе <span style="font-weight:400;color:#6b7686">— сегодня 2, ср.30дн 8</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 8</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="135.0" width="173.6" height="45.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 2</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Нарушений устранено <span style="font-weight:400;color:#6b7686">— сегодня 5, ср.30дн 5</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 5</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 5</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Газ <span style="font-weight:400;color:#6b7686">— сегодня 4, ср.30дн 5</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 5</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="36.0" width="173.6" height="144.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 4</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>ХВС <span style="font-weight:400;color:#6b7686">— сегодня 0, ср.30дн 3</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 3</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="180.0" width="173.6" height="0.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 0</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>ГВС <span style="font-weight:400;color:#6b7686">— сегодня 1, ср.30дн 2</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 2</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="90.0" width="173.6" height="90.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 1</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Экология <span style="font-weight:400;color:#6b7686">— сегодня 2, ср.30дн 2</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 2</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 2</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Канализация <span style="font-weight:400;color:#6b7686">— сегодня 0, ср.30дн 1</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 1</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="180.0" width="173.6" height="0.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 0</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div></div></details>
+</div>
+<div class="group"><h4 class="grp-title">Обращения граждан</h4>
+<div class="chart-block"><h3>Обращений граждан <span style="font-weight:400;color:#6b7686">— сегодня 153, ср.30дн 71</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="96.5" width="173.6" height="83.5" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 71</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 153</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div>
+<details class="spoiler"><summary>Подробнее — детализация (3)</summary><div class="spoiler-body"><div class="chart-block"><h3>Горячая линия (звонки) <span style="font-weight:400;color:#6b7686">— сегодня 77, ср.30дн 38</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="91.2" width="173.6" height="88.8" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 38</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 77</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Горячая линия Главы <span style="font-weight:400;color:#6b7686">— сегодня 77, ср.30дн 38</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="91.2" width="173.6" height="88.8" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 38</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 77</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div><div class="chart-block"><h3>Выездов СОЛН СПАС <span style="font-weight:400;color:#6b7686">— сегодня 13, ср.30дн 11</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="27.7" width="173.6" height="152.3" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 11</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 13</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div></div></details>
+</div>
+<div class="group"><h4 class="grp-title">Вызовы по 112</h4>
+<div class="chart-block"><h3>Вызовов по 112 <span style="font-weight:400;color:#6b7686">— сегодня 730, ср.30дн 586</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="35.5" width="173.6" height="144.5" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 586</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#c0392b" opacity="1"><title>02.06: 730</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div>
+<details class="spoiler"><summary>Подробнее — детализация (1)</summary><div class="spoiler-body"><div class="chart-block"><h3>Вызовов ИСКРА <span style="font-weight:400;color:#6b7686">— сегодня 10, ср.30дн 49</span></h3><svg viewBox="0 0 560 206" class="bars"><rect x="53.2" y="0.0" width="173.6" height="180.0" rx="2" fill="#1b4f8a" opacity="0.55"><title>01.06: 49</title></rect><text x="140.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">01.06</text><rect x="333.2" y="143.3" width="173.6" height="36.7" rx="2" fill="#c0392b" opacity="1"><title>02.06: 10</title></rect><text x="420.0" y="196" font-size="9" fill="#9aa4b2" text-anchor="middle">02.06</text></svg></div></div></details>
+</div>
+</section>
+<p style="text-align:center;color:#9aa4b2;font-size:12px;margin-top:24px">Аналитика формируется автоматически из ежедневных сводок ЕДДС МКУ «СолнСпас».</p>
+</div></body></html>
