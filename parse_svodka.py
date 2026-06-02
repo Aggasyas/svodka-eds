@@ -182,6 +182,21 @@ def parse(path):
                     # описание — самое длинное значение
                     desc = max(vals, key=len) if vals else ""
                     term = vals[-1] if len(vals) > 1 and vals[-1] != desc and len(vals[-1]) < 60 else ""
+                    # Фильтр: справочная/консультативная информация — это НЕ технологическое
+                    # нарушение (напр. "в адрес ЕДДС поступило N сообщений справочного и
+                    # консультативного характера"). Складываем такие записи отдельно.
+                    low = desc.lower()
+                    is_info = (
+                        ("справочн" in low and "консультатив" in low)
+                        or ("справочного и консультативного характера" in low)
+                        or ("поступило" in low and "сообщени" in low and "характера" in low)
+                    )
+                    if is_info:
+                        data.setdefault("info_messages", []).append({
+                            "datetime": date,
+                            "desc": desc,
+                        })
+                        continue
                     data["tech_violations"].append({
                         "resource": current_type or "",
                         "datetime": date,
