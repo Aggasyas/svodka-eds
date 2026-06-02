@@ -243,6 +243,7 @@ def build(data, mask=False, history=None):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Сводка ЕДДС · {esc(period)}</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2301696F'/%3E%3Cpath d='M32 8 L52 16 V32 C52 45 43 53 32 57 C21 53 12 45 12 32 V16 Z' fill='%23ffffff'/%3E%3Cpath d='M30 18 h4 v10 h10 v4 h-10 v10 h-4 v-10 h-10 v-4 h10 z' fill='%2301696F'/%3E%3C/svg%3E">
 <style>
 :root {{
   --bg:#f4f6f9; --card:#ffffff; --ink:#1a2230; --muted:#6b7686;
@@ -309,6 +310,16 @@ section.card > h2 {{ margin:0 0 14px; font-size:18px; color:var(--brand);
   background:var(--brand-soft); color:var(--brand); }}
 .note-ok {{ background:#e9f7ef; border:1px solid #c7ecd6; color:var(--green);
   padding:11px 14px; border-radius:10px; font-size:14px; }}
+.info-note {{ display:flex; gap:11px; align-items:flex-start; margin-top:14px;
+  background:#eef4fb; border:1px solid #d3e2f3; border-left:4px solid #5b8fd6;
+  padding:12px 15px; border-radius:10px; }}
+.info-note .info-ic {{ flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+  background:#5b8fd6; color:#fff; font-weight:700; font-size:14px; line-height:22px;
+  text-align:center; }}
+.info-note .info-h {{ font-weight:700; font-size:14px; color:#2f5a93; margin-bottom:4px; }}
+.info-note .info-ul {{ margin:0; padding-left:18px; font-size:14px; color:var(--ink); }}
+.info-note .info-ul li {{ margin:2px 0; }}
+.info-note .info-sub {{ font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }}
 table {{ width:100%; border-collapse:collapse; font-size:14px; }}
 th, td {{ text-align:left; padding:9px 11px; border-bottom:1px solid var(--line);
   vertical-align:top; }}
@@ -370,10 +381,13 @@ footer.sign .role {{ font-size:12.5px; }}
 .res-pill.alert .rn {{ color:var(--red); }}
 details.det {{ margin-top:16px; }}
 details.det > summary {{ cursor:pointer; font-size:13.5px; color:var(--brand);
-  font-weight:600; padding:8px 0; list-style:none; }}
+  font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }}
 details.det > summary::-webkit-details-marker {{ display:none; }}
-details.det > summary::before {{ content:'\25B6\00A0'; font-size:11px; }}
-details.det[open] > summary::before {{ content:'\25BC\00A0'; }}
+details.det > summary::before {{ content:''; flex:0 0 auto; width:0; height:0;
+  border-style:solid; border-width:5px 0 5px 8px;
+  border-color:transparent transparent transparent var(--brand);
+  transition:transform .15s ease; }}
+details.det[open] > summary::before {{ transform:rotate(90deg); }}
 .term.done {{ color:var(--green); font-weight:600; }}
 .tech-tbl {{ table-layout:fixed; }}
 .tech-tbl td {{ word-break:break-word; overflow-wrap:anywhere; }}
@@ -523,6 +537,21 @@ details.det[open] > summary::before {{ content:'\25BC\00A0'; }}
         parts.append("</tbody></table></details>")
     else:
         parts.append('<div class="note-ok">Технологических нарушений не зафиксировано.</div>')
+
+    # Справочно-консультативные сообщения — НЕ нарушения, показываем отдельно
+    info_msgs = data.get("info_messages", [])
+    if info_msgs:
+        items = "".join(
+            f'<li>{m(esc(im.get("desc", "")))}</li>' for im in info_msgs
+        )
+        parts.append(
+            '<div class="info-note">'
+            '<span class="info-ic">&#8505;</span>'
+            f'<div><div class="info-h">Справочно-консультативные обращения</div>'
+            f'<ul class="info-ul">{items}</ul>'
+            '<div class="info-sub">Информация справочного характера, не является технологическим нарушением.</div></div>'
+            '</div>'
+        )
     parts.append("</section>")
 
     # Обращения граждан — «от общего к частному»
