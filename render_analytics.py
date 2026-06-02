@@ -22,7 +22,7 @@ def fmt_date(d):
 
 
 # Наборы метрик для дашборда (ключевые KPI сверху)
-KPI = ["inc_total", "tech_total", "appeals_total", "calls_112"]
+KPI = ["inc_total", "tech_total", "appeals_total", "neva_edds"]
 # Группы для детальных графиков.
 # main — главный график группы (виден всегда), extra — детальные (внутри спойлера)
 GROUPS = [
@@ -30,6 +30,7 @@ GROUPS = [
     ("Технологические нарушения", "tech_total", ["tech_in_work", "tech_closed", "tech_gas", "tech_cold_water", "tech_hot_water", "tech_ecology", "tech_sewage", "tech_heating", "tech_electricity"]),
     ("Обращения граждан", "appeals_total", ["appeals_hotline", "mayor_hotline_total", "spas_total"]),
     ("Вызовы по 112", "calls_112", ["calls_iskra"]),
+    ("Запах с КПО «Нева»", "neva_edds", ["neva_hotline_eco"]),
 ]
 
 
@@ -204,7 +205,7 @@ tr:last-child td{{border-bottom:none}}
     # Таблица «лучше/хуже» по всем ключевым метрикам
     P.append('<section class="card"><h2>Сравнение с предыдущими сутками</h2>')
     P.append('<table><thead><tr><th>Показатель</th><th class="num">Сегодня</th><th class="num">Вчера</th><th class="num">Ср. 7 дн</th><th class="num">Ср. 30 дн</th><th>Оценка</th></tr></thead><tbody>')
-    table_keys = ["inc_total","inc_dtp","inc_minors","inc_uav","tech_total","tech_in_work","tech_gas","tech_cold_water","tech_hot_water","tech_ecology","appeals_total","appeals_hotline","calls_112","spas_total"]
+    table_keys = ["inc_total","inc_dtp","inc_minors","inc_uav","tech_total","tech_in_work","tech_gas","tech_cold_water","tech_hot_water","tech_ecology","neva_edds","appeals_total","appeals_hotline","calls_112","spas_total"]
     for k in table_keys:
         c = cmp_all.get(k)
         if not c:
