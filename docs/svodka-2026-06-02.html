@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Сводка ЕДДС · </title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2301696F'/%3E%3Cpath d='M32 8 L52 16 V32 C52 45 43 53 32 57 C21 53 12 45 12 32 V16 Z' fill='%23ffffff'/%3E%3Cpath d='M30 18 h4 v10 h10 v4 h-10 v10 h-4 v-10 h-10 v-4 h10 z' fill='%2301696F'/%3E%3C/svg%3E">
 <style>
 :root {
   --bg:#f4f6f9; --card:#ffffff; --ink:#1a2230; --muted:#6b7686;
@@ -70,6 +71,16 @@ section.card > h2 { margin:0 0 14px; font-size:18px; color:var(--brand);
   background:var(--brand-soft); color:var(--brand); }
 .note-ok { background:#e9f7ef; border:1px solid #c7ecd6; color:var(--green);
   padding:11px 14px; border-radius:10px; font-size:14px; }
+.info-note { display:flex; gap:11px; align-items:flex-start; margin-top:14px;
+  background:#eef4fb; border:1px solid #d3e2f3; border-left:4px solid #5b8fd6;
+  padding:12px 15px; border-radius:10px; }
+.info-note .info-ic { flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+  background:#5b8fd6; color:#fff; font-weight:700; font-size:14px; line-height:22px;
+  text-align:center; }
+.info-note .info-h { font-weight:700; font-size:14px; color:#2f5a93; margin-bottom:4px; }
+.info-note .info-ul { margin:0; padding-left:18px; font-size:14px; color:var(--ink); }
+.info-note .info-ul li { margin:2px 0; }
+.info-note .info-sub { font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }
 table { width:100%; border-collapse:collapse; font-size:14px; }
 th, td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line);
   vertical-align:top; }
@@ -131,10 +142,13 @@ footer.sign .role { font-size:12.5px; }
 .res-pill.alert .rn { color:var(--red); }
 details.det { margin-top:16px; }
 details.det > summary { cursor:pointer; font-size:13.5px; color:var(--brand);
-  font-weight:600; padding:8px 0; list-style:none; }
+  font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }
 details.det > summary::-webkit-details-marker { display:none; }
-details.det > summary::before { content:'B6 A0'; font-size:11px; }
-details.det[open] > summary::before { content:'BC A0'; }
+details.det > summary::before { content:''; flex:0 0 auto; width:0; height:0;
+  border-style:solid; border-width:5px 0 5px 8px;
+  border-color:transparent transparent transparent var(--brand);
+  transition:transform .15s ease; }
+details.det[open] > summary::before { transform:rotate(90deg); }
 .term.done { color:var(--green); font-weight:600; }
 .tech-tbl { table-layout:fixed; }
 .tech-tbl td { word-break:break-word; overflow-wrap:anywhere; }
@@ -170,7 +184,7 @@ details.det[open] > summary::before { content:'BC A0'; }
   <div class="metric green"><div class="v">13</div><div class="l">Выездов СОЛН СПАС</div></div>
 </div>
 
-<div class="dyn dyn-neutral"><div class="dyn-head">За сутки обстановка в пределах обычного</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">7</div><div class="d-cmp"><span class="d-good">▼ -4 к вчера</span> · <span class="d-good">-4 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">8</div><div class="d-cmp"><span class="d-good">▼ -6 к вчера</span> · <span class="d-good">-6 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">153</div><div class="d-cmp"><span class="d-bad">▲ +82 к вчера</span> · <span class="d-bad">+82 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">730</div><div class="d-cmp"><span class="d-bad">▲ +144 к вчера</span> · <span class="d-bad">+144 к ср.7дн</span></div></div></div><a class="dyn-link" href="analytics-2026-06-02.html">Подробная аналитика и графики →</a></div>
+<div class="dyn dyn-neutral"><div class="dyn-head">За сутки обстановка в пределах обычного</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">7</div><div class="d-cmp"><span class="d-good">▼ -4 к вчера</span> · <span class="d-good">-4 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">7</div><div class="d-cmp"><span class="d-good">▼ -6 к вчера</span> · <span class="d-good">-6 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">153</div><div class="d-cmp"><span class="d-bad">▲ +82 к вчера</span> · <span class="d-bad">+82 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">730</div><div class="d-cmp"><span class="d-bad">▲ +144 к вчера</span> · <span class="d-bad">+144 к ср.7дн</span></div></div></div><a class="dyn-link" href="analytics-2026-06-02.html">Подробная аналитика и графики →</a></div>
 <nav class="toc">
   <a href="#cs">ЧС</a><a href="#inc">Происшествия</a><a href="#fire">Пожары</a>
   <a href="#tech">Технологич. нарушения</a><a href="#appeals">Обращения</a>
@@ -221,14 +235,13 @@ details.det[open] > summary::before { content:'BC A0'; }
 <p>ПСЧ-268, -, 1, -, 2, -, 1, 4</p>
 </section>
 <section class="card" id="tech"><h2>Технологические нарушения</h2>
-<div class="summary-row"><div class="sb total"><div class="v">8</div><div class="l">всего</div></div><div class="sb work"><div class="v">2</div><div class="l">в работе</div></div><div class="sb closed"><div class="v">5</div><div class="l">устранено</div></div><div class="sb gray"><div class="v">1</div><div class="l">без срока / инфо</div></div></div>
+<div class="summary-row"><div class="sb total"><div class="v">7</div><div class="l">всего</div></div><div class="sb work"><div class="v">2</div><div class="l">в работе</div></div><div class="sb closed"><div class="v">5</div><div class="l">устранено</div></div></div>
 <div class="res-row">
 <div class="res-pill res-ГВС"><span class="rn">1</span> ГВС</div>
 <div class="res-pill res-Газ"><span class="rn">4</span> Газ</div>
 <div class="res-pill res-Экология"><span class="rn">2</span> Экология</div>
-<div class="res-pill res-Другое"><span class="rn">1</span> Другое</div>
 </div>
-<details class="det" open><summary>Детализация (8 шт.)</summary>
+<details class="det" open><summary>Детализация (7 шт.)</summary>
 <table class="tech-tbl"><colgroup><col style="width:120px"><col><col style="width:96px"></colgroup><thead><tr><th>Ресурс / время</th><th>Что и где</th><th>Статус</th></tr></thead><tbody>
 <tr><td style="white-space:nowrap"><span class="res-tag res-ГВС">ГВС</span><br><span class="term">01.06.2026 14:00</span></td><td>пос. Майдарово, д.**. Для проведения неплановых работ по устранению контролируемого дефекта от котельной БМК, отключена подача ГВС. п. Майдарово д. **,2,3,4,5,8,9,9а. 8 МКД. Исполнитель: ОАО «Газпромтеплоэнерго».</td><td class="term done">15:15</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-Газ">Газ</span><br><span class="term">01.06.2026г.</span></td><td>Информация от 30.05.2026г. г. Солнечногорск, ул. Военный городок, д. **, в связи с утечкой на трубопроводе, прекращена подача газа жителям 9 квартир. Исполнитель: АО &quot;Мособлгаз&quot;.</td><td class="term done">18:00</td></tr>
@@ -237,8 +250,8 @@ details.det[open] > summary::before { content:'BC A0'; }
 <tr><td style="white-space:nowrap"><span class="res-tag res-Газ">Газ</span><br><span class="term">01.06.2026г. 23:04</span></td><td>п. Андреевка, ул. Староандреевская, д.**, корп.3. Запах газа на улице. Заявитель: тел: 8-XXX-XXX-XX-XX, АО &quot;Мособлгаз&quot;.</td><td class="term done" title="02.06.2026г. 00:04">устранено</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-Экология">Экология</span><br><span class="term">01.06.2026, 21:15.</span></td><td>д. Марьино. ул. Весенняя д. **. Запах с КПО Нева. Заявитель: Романенкова *** Телефон заявителя: 8-XXX-XXX-XX-XX.</td><td class="term work" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-Экология">Экология</span><br><span class="term">01.06.2026, 23:45.</span></td><td>г. Зеленоград, корп. 1425. Свалочный запах с КПО &quot;Нева&quot;. Заявитель: Максимова *** Телефон заявителя: 8-XXX-XXX-XX-XX.</td><td class="term work" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
-<tr><td style="white-space:nowrap"><span class="res-tag res-Другое">Другое</span><br><span class="term">01.06.2026г.</span></td><td>В течение суток в адрес ЕДДС поступило 32 сообщений справочного и консультативного характера.</td><td class="term">—</td></tr>
 </tbody></table></details>
+<div class="info-note"><span class="info-ic">&#8505;</span><div><div class="info-h">Справочно-консультативные обращения</div><ul class="info-ul"><li>В течение суток в адрес ЕДДС поступило 32 сообщений справочного и консультативного характера.</li></ul><div class="info-sub">Информация справочного характера, не является технологическим нарушением.</div></div></div>
 </section>
 <section class="card" id="appeals"><h2>Обращения граждан за сутки</h2>
 <div class="summary-row"><div class="sb total"><div class="v">153</div><div class="l">всего обращений</div></div><div class="sb blue"><div class="v">77</div><div class="l">на горячую линию Главы</div></div><div class="sb gray"><div class="v">730</div><div class="l">вызовов НС-112</div></div></div>
