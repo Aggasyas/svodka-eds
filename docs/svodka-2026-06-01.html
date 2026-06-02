@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Сводка ЕДДС · с 31 мая на 01 июня 2026</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2301696F'/%3E%3Cpath d='M32 8 L52 16 V32 C52 45 43 53 32 57 C21 53 12 45 12 32 V16 Z' fill='%23ffffff'/%3E%3Cpath d='M30 18 h4 v10 h10 v4 h-10 v10 h-4 v-10 h-10 v-4 h10 z' fill='%2301696F'/%3E%3C/svg%3E">
 <style>
 :root {
   --bg:#f4f6f9; --card:#ffffff; --ink:#1a2230; --muted:#6b7686;
@@ -70,6 +71,16 @@ section.card > h2 { margin:0 0 14px; font-size:18px; color:var(--brand);
   background:var(--brand-soft); color:var(--brand); }
 .note-ok { background:#e9f7ef; border:1px solid #c7ecd6; color:var(--green);
   padding:11px 14px; border-radius:10px; font-size:14px; }
+.info-note { display:flex; gap:11px; align-items:flex-start; margin-top:14px;
+  background:#eef4fb; border:1px solid #d3e2f3; border-left:4px solid #5b8fd6;
+  padding:12px 15px; border-radius:10px; }
+.info-note .info-ic { flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+  background:#5b8fd6; color:#fff; font-weight:700; font-size:14px; line-height:22px;
+  text-align:center; }
+.info-note .info-h { font-weight:700; font-size:14px; color:#2f5a93; margin-bottom:4px; }
+.info-note .info-ul { margin:0; padding-left:18px; font-size:14px; color:var(--ink); }
+.info-note .info-ul li { margin:2px 0; }
+.info-note .info-sub { font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }
 table { width:100%; border-collapse:collapse; font-size:14px; }
 th, td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line);
   vertical-align:top; }
@@ -131,10 +142,13 @@ footer.sign .role { font-size:12.5px; }
 .res-pill.alert .rn { color:var(--red); }
 details.det { margin-top:16px; }
 details.det > summary { cursor:pointer; font-size:13.5px; color:var(--brand);
-  font-weight:600; padding:8px 0; list-style:none; }
+  font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }
 details.det > summary::-webkit-details-marker { display:none; }
-details.det > summary::before { content:'B6 A0'; font-size:11px; }
-details.det[open] > summary::before { content:'BC A0'; }
+details.det > summary::before { content:''; flex:0 0 auto; width:0; height:0;
+  border-style:solid; border-width:5px 0 5px 8px;
+  border-color:transparent transparent transparent var(--brand);
+  transition:transform .15s ease; }
+details.det[open] > summary::before { transform:rotate(90deg); }
 .term.done { color:var(--green); font-weight:600; }
 .tech-tbl { table-layout:fixed; }
 .tech-tbl td { word-break:break-word; overflow-wrap:anywhere; }
@@ -170,7 +184,7 @@ details.det[open] > summary::before { content:'BC A0'; }
   <div class="metric green"><div class="v">11</div><div class="l">Выездов СОЛН СПАС</div></div>
 </div>
 
-<div class="dyn dyn-neutral"><div class="dyn-head">Динамика появится со второго дня наблюдений</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">11</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">14</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">71</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">586</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div></div><a class="dyn-link" href="analytics-2026-06-01.html">Подробная аналитика и графики →</a></div>
+<div class="dyn dyn-neutral"><div class="dyn-head">Динамика появится со второго дня наблюдений</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">11</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">13</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">71</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">586</div><div class="d-cmp"><span class="d-flat">нет данных за вчера</span></div></div></div><a class="dyn-link" href="analytics-2026-06-01.html">Подробная аналитика и графики →</a></div>
 <nav class="toc">
   <a href="#cs">ЧС</a><a href="#inc">Происшествия</a><a href="#fire">Пожары</a>
   <a href="#tech">Технологич. нарушения</a><a href="#appeals">Обращения</a>
@@ -220,16 +234,15 @@ details.det[open] > summary::before { content:'BC A0'; }
 <div class="note-ok">✓ Пожаров и возгораний за прошедшие сутки не зарегистрировано.</div>
 </section>
 <section class="card" id="tech"><h2>Технологические нарушения</h2>
-<div class="summary-row"><div class="sb total"><div class="v">14</div><div class="l">всего</div></div><div class="sb work"><div class="v">8</div><div class="l">в работе</div></div><div class="sb closed"><div class="v">5</div><div class="l">устранено</div></div><div class="sb gray"><div class="v">1</div><div class="l">без срока / инфо</div></div></div>
+<div class="summary-row"><div class="sb total"><div class="v">13</div><div class="l">всего</div></div><div class="sb work"><div class="v">8</div><div class="l">в работе</div></div><div class="sb closed"><div class="v">5</div><div class="l">устранено</div></div></div>
 <div class="res-row">
 <div class="res-pill res-ГВС"><span class="rn">2</span> ГВС</div>
 <div class="res-pill res-ХВС"><span class="rn">3</span> ХВС</div>
 <div class="res-pill res-Газ"><span class="rn">5</span> Газ</div>
 <div class="res-pill res-Экология"><span class="rn">2</span> Экология</div>
 <div class="res-pill res-Канализация"><span class="rn">1</span> Канализация</div>
-<div class="res-pill res-Другое"><span class="rn">1</span> Другое</div>
 </div>
-<details class="det" open><summary>Детализация (14 шт.)</summary>
+<details class="det" open><summary>Детализация (13 шт.)</summary>
 <table class="tech-tbl"><colgroup><col style="width:120px"><col><col style="width:96px"></colgroup><thead><tr><th>Ресурс / время</th><th>Что и где</th><th>Статус</th></tr></thead><tbody>
 <tr><td style="white-space:nowrap"><span class="res-tag res-ГВС">ГВС</span><br><span class="term">31.05.2026г.</span></td><td>Информация от 30.05.2026г. т.о. Кривцовское-Смирновское, п. Смирновка. В связи с утечкой горячей воды из магистрального водопровода в подвале д. ** прекращена подача ГВС по адресам: д. Смирновка, д. д. **, 6а, 4а, 2, 3, 7, 14,14а,15а,16а, 23. МКД-11, жителей -570 чел. Исполнитель: &quot;Газпром теплоэнерго&quot;.</td><td class="term done">16:00</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-ГВС">ГВС</span><br><span class="term">31.05.2026г. 19:30</span></td><td>т.о. Пешковское. В связи отключением подачи ХВС со стороны ГУП МО &quot;Солнечногорское ЖКХ&quot; на котельную п. Жуково прекращена подача ГВС по следующим адресам: п. Жуково, мкр. Берёзки, д. **, 2, 3, 4, 24, 25. МКД-6, жителей-674 чел. Исполнитель: ГУП МО &quot;Солнечногорское ЖКХ&quot;.</td><td class="term work" title="В работе">в работе</td></tr>
@@ -244,8 +257,8 @@ details.det[open] > summary::before { content:'BC A0'; }
 <tr><td style="white-space:nowrap"><span class="res-tag res-Экология">Экология</span><br><span class="term">31.05.2026г. 19:54</span></td><td>т.о. Поварово-Соколовское, д. Лыткино, СНТ &quot;Лесная поляна&quot;, д. **. Неприятный запах с КПО &quot;Нева&quot;. Заявитель: Бондаренко ***А, тел. 8-XXX-XXX-XX-XX, управление ЖКХ и экологии администрации г.о. Солнечногорск.</td><td class="term work" title="На контроле.">в работе</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-Экология">Экология</span><br><span class="term">31.05.2026г. 23:38</span></td><td>т.о. Поварово-Соколовское, д. Марьино, ул. Живописная, д. **. Неприятный запах с КПО &quot;Нева&quot;. Заявитель: Аркадьева ***Ю, тел. 8-XXX-XXX-XX-XX, управление ЖКХ и экологии администрации г.о. Солнечногорск.</td><td class="term work" title="На контроле.">в работе</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-Канализация">Канализация</span><br><span class="term">31.05.2026г. 10:00</span></td><td>т.о. Ржевки-Менделеево, пгт. Менделеево, ул. Куйбышева, в связи с засором канализационных колодцев около д. **, происходит подтопление подвалов МКД. Исполнитель: ГУП МО «Солнечногорское ЖКХ».</td><td class="term work" title="Срок проведения работ не определен.">в работе</td></tr>
-<tr><td style="white-space:nowrap"><span class="res-tag res-Другое">Другое</span><br><span class="term">31.05.2026г.</span></td><td>В течение суток в адрес ЕДДС поступило 20 сообщений справочного и консультативного характера.</td><td class="term">—</td></tr>
 </tbody></table></details>
+<div class="info-note"><span class="info-ic">&#8505;</span><div><div class="info-h">Справочно-консультативные обращения</div><ul class="info-ul"><li>В течение суток в адрес ЕДДС поступило 20 сообщений справочного и консультативного характера.</li></ul><div class="info-sub">Информация справочного характера, не является технологическим нарушением.</div></div></div>
 </section>
 <section class="card" id="appeals"><h2>Обращения граждан за сутки</h2>
 <div class="summary-row"><div class="sb total"><div class="v">71</div><div class="l">всего обращений</div></div><div class="sb blue"><div class="v">38</div><div class="l">на горячую линию Главы</div></div><div class="sb gray"><div class="v">586</div><div class="l">вызовов НС-112</div></div></div>
