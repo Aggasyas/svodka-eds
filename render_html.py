@@ -228,20 +228,11 @@ def build_neva_card(data, mask, history, date):
     neva = data.get("neva", {})
     edds_n = int(neva.get("edds_count", 0) or 0)
     eco_n = neva.get("hotline_eco_count")
-    items = neva.get("edds_items", [])
     dyn = _neva_delta_text(history, date)
 
-    # список обращений (с маскированием ПДн)
-    if items:
-        lis = "".join(
-            '<li><span class="nt">%s</span> — %s</li>' % (
-                esc(it.get("datetime", "").strip()),
-                esc(mask_pii(it.get("desc", ""), mask)),
-            )
-            for it in items
-        )
-        listing = '<ul class="neva-list">%s</ul>' % lis
-    elif edds_n == 0:
+    # Детализация обращений в плашке НЕ дублируется — она уже есть в
+    # разделе «Технологические нарушения». При нуле — короткая ремарка.
+    if edds_n == 0:
         listing = '<div class="neva-zero">За сутки обращений по запаху с КПО «Нева» на ЕДДС не поступало.</div>'
     else:
         listing = ""
@@ -263,7 +254,7 @@ def build_neva_card(data, mask, history, date):
         '</div>'
         '%s'
         '%s'
-        '<div class="neva-sub">Считаются только детальные обращения раздела ЕДДС (подраздел «Экология») с упоминанием «Нева». Показатель горячей линии дан для контекста и не приравнивается к «Нева».</div>'
+        '<div class="neva-sub">Считаются только детальные обращения раздела ЕДДС (подраздел «Экология») с упоминанием «Нева» — сами обращения см. в разделе «Технологические нарушения». Показатель горячей линии дан для контекста и не приравнивается к «Нева».</div>'
         '</div>'
     ) % (NEVA_ICON, esc(edds_n), eco_pill, dyn, listing)
 
