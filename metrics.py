@@ -122,6 +122,14 @@ def extract_metrics(data):
     hl = data.get("hotline_categories", [])
     m["mayor_hotline_total"] = sum(_num(c.get("count")) for c in hl)
 
+    # --- Обращения по КПО "Нева" (запах) ---
+    # Точное число: поимённые обращения раздела ЕДДС с упоминанием "Нева".
+    neva = data.get("neva", {})
+    m["neva_edds"] = _num(neva.get("edds_count", 0))
+    # Справочно: "Экология" горячей линии Главы (агрегат, не приравнивается к Нева).
+    if neva.get("hotline_eco_count") is not None:
+        m["neva_hotline_eco"] = _num(neva.get("hotline_eco_count", 0))
+
     return m
 
 
@@ -163,7 +171,7 @@ def upsert_history(path, metrics):
 BAD_UP = {
     "inc_total", "inc_dtp", "inc_minors", "inc_fire", "inc_water", "inc_uav",
     "inc_dead", "inc_injured", "inc_other", "tech_total", "tech_in_work",
-    "appeals_total", "appeals_hotline", "calls_112",
+    "appeals_total", "appeals_hotline", "calls_112", "neva_edds",
 }
 
 METRIC_LABELS = {
@@ -178,6 +186,7 @@ METRIC_LABELS = {
     "appeals_total": "Обращений граждан", "appeals_hotline": "Горячая линия (звонки)",
     "calls_112": "Вызовов по 112", "calls_iskra": "Вызовов ИСКРА",
     "spas_total": "Выездов СОЛН СПАС", "mayor_hotline_total": "Горячая линия Главы",
+    "neva_edds": "Запах с КПО «Нева» (ЕДДС)", "neva_hotline_eco": "Экология (горячая линия Главы)",
 }
 
 
