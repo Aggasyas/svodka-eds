@@ -279,6 +279,38 @@ def parse(path):
             data["weather"]["forecast"] = dict(zip(labels, values))
             break
 
+    # --- Обращения по КПО "Нева" (неприятный/свалочный запах) ---
+    # Считаем ТОЛЬКО детальные обращения раздела ЕДДС (технологические нарушения,
+    # подраздел "Экология"), отфильтрованные по упоминанию "Нева".
+    # Формулировки плавают: "Неприятный запах с КПО Нева", "Запах с КПО Нева",
+    # "Свалочный запах с КПО Нева" — ловим просто по слову "нева" + "запах".
+    neva_items = []
+    for v in data.get("tech_violations", []):
+        desc = (v.get("desc") or "")
+        low = desc.lower()
+        if "нева" in low and "запах" in low:
+            neva_items.append({
+                "datetime": v.get("datetime", ""),
+                "desc": desc,
+                "term": v.get("term", ""),
+            })
+    # Справочно: категория "Экология" в блоке "Горячая линия Главы" (агрегат, без
+    # детализации). НЕ приравниваем к "Нева" — храним отдельно как контекст.
+    hotline_eco = None
+    for c in data.get("hotline_categories", []):
+        if c.get("category", "").strip().lower().startswith("эколог"):
+            raw = str(c.get("count", "")).strip()
+            try:
+                hotline_eco = int(re.sub(r"[^\d]", "", raw)) if re.search(r"\d", raw) else 0
+            except Exception:
+                hotline_eco = 0
+            break
+    data["neva"] = {
+        "edds_count": len(neva_items),       # точное число поимённых обращений на ЕДДС
+        "edds_items": neva_items,            # сами обращения (с маскированием на этапе рендера)
+        "hotline_eco_count": hotline_eco,    # справочно: "Экология" горячей линии Главы
+    }
+
     return data
 
 
