@@ -18,10 +18,21 @@ Telegram-бот сводок ЕДДС Солнечногорска.
 
 Доступ: только Telegram-ID из ALLOWED_IDS (защита от чужих).
 
+Работа в группе:
+  • Бот можно добавить в рабочий чат — он сам увидит присланный .docx и
+    обработает его (нужно отключить privacy mode у @BotFather, см. инструкцию).
+  • В группе бот реагирует ТОЛЬКО на файлы с именем вида Svodka-*.docx
+    (NAME_FILTER), чтобы не мешать обычной переписке.
+  • Разрешённые группы перечисляются в ALLOWED_CHAT_IDS (id чатов, отрицательные).
+  • Результат (ссылка + динамика) уходит в REPORT_CHAT_ID — обычно ваша личка,
+    чтобы не светить сводку с ПДн в общем чате. В личном чате ответ приходит
+    прямо в диалог, как раньше.
+
 Запускается как systemd-сервис. Все настройки — через переменные окружения
 (см. .env.example и инструкцию INSTRUKCIYA.md).
 """
 import os
+import re
 import sys
 import asyncio
 import logging
@@ -53,6 +64,21 @@ MASK_PII    = os.environ.get("MASK_PII", "0") == "1"
 ALLOWED_IDS = {
     int(x) for x in os.environ.get("ALLOWED_IDS", "").replace(" ", "").split(",") if x
 }
+
+# Разрешённые групповые чаты (id обычно отрицательные), через запятую.
+# Если пусто — бот в группах файлы не обрабатывает (только личка).
+ALLOWED_CHAT_IDS = {
+    int(x) for x in os.environ.get("ALLOWED_CHAT_IDS", "").replace(" ", "").split(",") if x
+}
+
+# Куда присылать результат при обработке из группы (обычно ваша личка —
+# numeric id). Если не задан, в группе бот ответит в сам чат.
+_report = os.environ.get("REPORT_CHAT_ID", "").strip()
+REPORT_CHAT_ID = int(_report) if _report.lstrip("-").isdigit() else None
+
+# Шаблон имени файла, на который бот реагирует в ГРУППЕ (регистронезависимо).
+# В личке принимаем любой .docx. По умолчанию — "svodka...".
+NAME_FILTER = re.compile(os.environ.get("NAME_FILTER", r"svodka.*\.docx$"), re.IGNORECASE)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -115,8 +141,10 @@ def dynamics_text(date: str) -> str:
 def git_publish(commit_msg: str) -> tuple[bool, str]:
     """Коммитим site/ и пушим в origin. Возвращает (успех, текст)."""
     try:
+        # имя папки сайта внутри репозитория (на сервере это docs, локально site)
+        site_rel = os.path.relpath(SITE_DIR, GIT_REPO)
         # добавляем сайт и историю
-        subprocess.run(["git", "-C", GIT_REPO, "add", "site", "history.jsonl"],
+        subprocess.run(["git", "-C", GIT_REPO, "add", site_rel, "history.jsonl"],
                        check=True, capture_output=True, text=True)
         # есть ли что коммитить
         diff = subprocess.run(["git", "-C", GIT_REPO, "diff", "--cached", "--quiet"])
@@ -124,8 +152,22 @@ def git_publish(commit_msg: str) -> tuple[bool, str]:
             return True, "изменений нет (уже опубликовано)"
         subprocess.run(["git", "-C", GIT_REPO, "commit", "-m", commit_msg],
                        check=True, capture_output=True, text=True)
-        push = subprocess.run(["git", "-C", GIT_REPO, "push", "origin", "HEAD"],
-                              check=True, capture_output=True, text=True)
+
+        # Перед push подтягиваем удалённые коммиты (например, правки кода,
+        # сделанные напрямую на GitHub) — иначе push отклоняется «fetch first».
+        # Пробуем push, и если отклонён — делаем merge-pull и повторяем (1 раз).
+        def _try_push():
+            return subprocess.run(["git", "-C", GIT_REPO, "push", "origin", "HEAD"],
+                                  capture_output=True, text=True)
+        push = _try_push()
+        if push.returncode != 0:
+            # подтягиваем удалённые изменения слиянием (без ребейза)
+            subprocess.run(["git", "-C", GIT_REPO, "pull", "--no-rebase",
+                            "--no-edit", "origin", "HEAD"],
+                           check=True, capture_output=True, text=True)
+            push = _try_push()
+        if push.returncode != 0:
+            return False, (push.stderr or push.stdout or "push failed")[-500:]
         return True, "опубликовано"
     except subprocess.CalledProcessError as e:
         return False, (e.stderr or e.stdout or str(e))[-500:]
@@ -210,19 +252,54 @@ async def cmd_analitika(msg: Message):
     )
 
 
+def is_private(msg: Message) -> bool:
+    return msg.chat and msg.chat.type == "private"
+
+
+def group_allowed(msg: Message) -> bool:
+    """Разрешён ли этот групповой чат для обработки сводок."""
+    if not ALLOWED_CHAT_IDS:
+        return False  # группы не сконфигурированы — игнорируем
+    return msg.chat and msg.chat.id in ALLOWED_CHAT_IDS
+
+
 @dp.message(F.document)
 async def on_document(msg: Message):
-    if not allowed(msg):
-        await msg.answer("⛔ Доступ запрещён.")
-        return
-
     doc = msg.document
-    name = (doc.file_name or "").lower()
-    if not name.endswith(".docx"):
-        await msg.answer("Нужен файл <b>.docx</b> со сводкой ЕДДС.", parse_mode="HTML")
-        return
+    name = (doc.file_name or "")
+    private = is_private(msg)
 
-    status = await msg.answer("⏳ Принял файл, собираю сводку…")
+    # --- Контроль доступа и фильтрация ---
+    if private:
+        # Личка: проверяем пользователя; принимаем любой .docx
+        if not allowed(msg):
+            await msg.answer("⛔ Доступ запрещён.")
+            return
+        if not name.lower().endswith(".docx"):
+            await msg.answer("Нужен файл <b>.docx</b> со сводкой ЕДДС.", parse_mode="HTML")
+            return
+    else:
+        # Группа: молча игнорируем чужие чаты и посторонние файлы
+        if not group_allowed(msg):
+            return
+        if not (name.lower().endswith(".docx") and NAME_FILTER.search(name)):
+            return  # не сводка — не реагируем, чтобы не мешать переписке
+
+    # Куда слать прогресс и результат:
+    #  • из лички — отвечаем в тот же диалог;
+    #  • из группы — результат в REPORT_CHAT_ID (личка), а в группе не шумим.
+    report_to = msg.chat.id if private else (REPORT_CHAT_ID or msg.chat.id)
+
+    async def report(text: str):
+        await bot.send_message(report_to, text, parse_mode="HTML",
+                               disable_web_page_preview=True)
+
+    if private:
+        status = await msg.answer("⏳ Принял файл, собираю сводку…")
+    else:
+        # из группы — короткая реакция-уведомление автору в личку, что взяли в работу
+        await report(f"⏳ Принял сводку из чата «{esc_chat(msg)}», собираю…")
+        status = None
 
     # 1. скачиваем во временный файл
     tmpdir = tempfile.mkdtemp(prefix="svodka_")
@@ -231,7 +308,7 @@ async def on_document(msg: Message):
         tg_file = await bot.get_file(doc.file_id)
         await bot.download_file(tg_file.file_path, destination=local_path)
     except Exception as e:
-        await status.edit_text(f"❌ Не смог скачать файл: {e}")
+        await _set(status, report, f"❌ Не смог скачать файл: {e}")
         return
 
     # 2. конвейер сборки (синхронный — уводим в поток, чтобы не блокировать бота)
@@ -240,17 +317,17 @@ async def on_document(msg: Message):
             build_all.build_site, local_path, SITE_DIR, HISTORY, MASK_PII
         )
     except SystemExit as e:
-        await status.edit_text(f"❌ Не разобрал файл: {e}")
+        await _set(status, report, f"❌ Не разобрал файл: {e}")
         return
     except Exception as e:
         log.exception("build_site failed")
-        await status.edit_text(f"❌ Ошибка сборки: {e}")
+        await _set(status, report, f"❌ Ошибка сборки: {e}")
         return
 
     date = res["date"]
 
     # 3. публикация на GitHub Pages
-    await status.edit_text(f"✅ Собрал сводку за {date}. Публикую…")
+    await _set(status, report, f"✅ Собрал сводку за {date}. Публикую…")
     ok, pub = await asyncio.to_thread(git_publish, f"Сводка ЕДДС за {date}")
 
     # 4. ответ с динамикой
@@ -268,7 +345,21 @@ async def on_document(msg: Message):
     if not ok:
         body += f"\n\n<code>{pub}</code>"
 
-    await status.edit_text(body, parse_mode="HTML", disable_web_page_preview=True)
+    await _set(status, report, body)
+
+
+def esc_chat(msg: Message) -> str:
+    """Безопасное имя чата для подписи."""
+    t = getattr(msg.chat, "title", None) or getattr(msg.chat, "full_name", None) or str(msg.chat.id)
+    return (t or "").replace("<", "&lt;").replace(">", "&gt;")
+
+
+async def _set(status, report, text: str):
+    """Обновить статус (личка) или прислать новое сообщение (группа→личка)."""
+    if status is not None:
+        await status.edit_text(text, parse_mode="HTML", disable_web_page_preview=True)
+    else:
+        await report(text)
 
 
 async def main():
