@@ -1,0 +1,19 @@
+[Unit]
+Description=MAX-бот сводок ЕДДС Солнечногорска (мессенджер MAX)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=svodka
+Group=svodka
+WorkingDirectory=/opt/svodka
+EnvironmentFile=/opt/svodka/bot/.env.max
+ExecStart=/opt/svodka/venv/bin/python /opt/svodka/bot/svodka_max_bot.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
