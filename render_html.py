@@ -97,6 +97,18 @@ def mask_pii(text, enabled):
         r'(\s*:?\s*)([А-ЯЁ][а-яё]+)\s+[А-ЯЁ][а-яё.]+(?:\s+[А-ЯЁ][а-яё.]+)?',
         r'\1\2\3 ***', text)
 
+    # 3б) Полное ФИО «Фамилия Имя Отчество» без ключевого слова (три слова
+    #    с большой буквы подряд). Отчество обычно заканчивается на
+    #    -вич/-вна/-ич/-инична — это надёжный признак, чтобы не задеть
+    #    топонимы. Оставляем фамилию, скрываем имя+отчество.
+    text = re.sub(
+        r'\b([А-ЯЁ][а-яё]{2,})\s+[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+(?:вич|вна|ич|инична|ьевна|овна)\b',
+        r'\1 ***', text)
+    # и обратный порядок «Имя Отчество Фамилия» — скрываем имя и отчество
+    text = re.sub(
+        r'\b[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+(?:вич|вна|ич|инична|ьевна|овна)\s+([А-ЯЁ][а-яё]{2,})\b',
+        r'*** \1', text)
+
     # 4) Номер дома и квартиры в адресе — скрываем точную привязку к жилью.
     #    Оставляем населённый пункт/улицу. Примеры:
     #      "д.5А, кв. 442" -> "д.**, кв.**"
@@ -191,6 +203,48 @@ NEVA_ICON = (
     'stroke-width="1.6" stroke-linecap="round"/>'
     '</svg>'
 )
+
+
+FATAL_ICON = (
+    '<svg class="fatal-ic" viewBox="0 0 24 24" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    '<path d="M12 2 L22 20 H2 Z" fill="#fff" stroke="#fff" stroke-width="1.5" '
+    'stroke-linejoin="round"/>'
+    '<path d="M12 8.5 V13.5" stroke="#c0392b" stroke-width="2.2" stroke-linecap="round"/>'
+    '<circle cx="12" cy="16.6" r="1.25" fill="#c0392b"/>'
+    '</svg>'
+)
+
+
+def build_fatal_alert(data, mask):
+    """Красная плашка вверху сводки при наличии смертельных случаев.
+    Если погибших нет — возвращает пустую строку (плашка не показывается)."""
+    fatal = data.get("fatal", {})
+    if not fatal.get("has"):
+        return ""
+    SECT = {"incidents": "Происшествия", "tech": "Технологические нарушения",
+            "dtp": "ДТП"}
+    items_html = []
+    for it in fatal.get("items", []):
+        sect = SECT.get(it.get("section"), it.get("section", ""))
+        typ = it.get("type", "")
+        dt = it.get("datetime", "")
+        txt = esc(mask_pii(it.get("text", ""), mask))
+        meta = " · ".join(x for x in [esc(sect), esc(typ)] if x)
+        head = f'<span class="fatal-meta">{meta}'
+        if dt:
+            head += f' · {esc(dt)}'
+        head += "</span>"
+        items_html.append(f'<li>{head}<div class="fatal-txt">{txt}</div></li>')
+    n = fatal.get("count", 0)
+    word = "случай" if n == 1 else ("случая" if 2 <= n <= 4 else "случаев")
+    return (
+        '<div class="fatal-alert" role="alert">'
+        '<div class="fatal-top">%s<div class="fatal-h">ВНИМАНИЕ: смертельный случай</div>'
+        '<div class="fatal-badge">%d %s</div></div>'
+        '<ul class="fatal-list">%s</ul>'
+        '</div>'
+    ) % (FATAL_ICON, n, word, "".join(items_html))
 
 
 def _neva_delta_text(history, date):
@@ -402,6 +456,22 @@ section.card > h2 {{ margin:0 0 14px; font-size:18px; color:var(--brand);
 .info-note .info-ul {{ margin:0; padding-left:18px; font-size:14px; color:var(--ink); }}
 .info-note .info-ul li {{ margin:2px 0; }}
 .info-note .info-sub {{ font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }}
+/* Красная плашка смертельного случая */
+.fatal-alert {{ margin:16px 0 8px; background:#fdecea; border:1.5px solid #e7a59d;
+  border-left:6px solid var(--red); border-radius:12px; padding:14px 18px;
+  box-shadow:0 1px 4px rgba(192,57,43,.12); }}
+.fatal-top {{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }}
+.fatal-ic {{ flex:0 0 auto; width:26px; height:26px; background:var(--red);
+  border-radius:7px; padding:3px; box-sizing:border-box; }}
+.fatal-h {{ font-weight:800; font-size:16px; color:var(--red); letter-spacing:.2px; }}
+.fatal-badge {{ margin-left:auto; background:var(--red); color:#fff; font-weight:700;
+  font-size:12.5px; padding:3px 11px; border-radius:20px; white-space:nowrap; }}
+.fatal-list {{ margin:6px 0 0; padding-left:0; list-style:none; }}
+.fatal-list li {{ background:#fff; border:1px solid #f0c8c2; border-radius:9px;
+  padding:9px 12px; margin:7px 0; }}
+.fatal-meta {{ display:block; font-size:11.5px; font-weight:700; color:#a23529;
+  text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }}
+.fatal-txt {{ font-size:14px; color:#3a1f1c; line-height:1.5; }}
 .neva-card {{ margin:16px 0 6px; background:#fdf3ec; border:1px solid #f0cdb4;
   border-left:5px solid #d9742b; border-radius:12px; padding:15px 18px; }}
 .neva-card .neva-top {{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }}
@@ -523,6 +593,9 @@ details.det[open] > summary .det-caret {{ transform:rotate(45deg); margin-top:-4
   <div class="metric green"><div class="v">{esc(spas_total)}</div><div class="l">Выездов СОЛН СПАС</div></div>
 </div>
 """)
+
+    # КРАСНАЯ плашка смертельных случаев — самый верх (только если есть)
+    parts.append(build_fatal_alert(data, mask))
 
     # плашка «Нева» (всегда показываем, даже при нуле)
     parts.append(build_neva_card(data, mask, history, date))
