@@ -32,11 +32,34 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .tag-demo{font-size:10.5px;color:var(--muted);background:#eef2f7;padding:1px 7px;border-radius:6px;margin-left:6px}
 .foot{text-align:center;color:#9aa4b2;font-size:12px;margin-top:24px}
 @media(max-width:680px){.links{margin-left:0;width:100%}.dt{min-width:auto}}
+
+/* Навигация год → месяц → дни */
+.tree{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+details.yr{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+details.yr>summary{list-style:none;cursor:pointer;padding:14px 18px;
+  font-size:18px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:10px;
+  background:var(--brand-soft)}
+details.yr>summary::-webkit-details-marker{display:none}
+.caret{display:inline-block;width:9px;height:9px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s ease;flex:0 0 auto;margin-top:-2px}
+details[open]>summary .caret{transform:rotate(45deg);margin-top:-4px}
+.yr .cnt{font-size:13px;font-weight:600;color:var(--muted);margin-left:auto}
+.months{padding:8px 12px 14px;display:flex;flex-direction:column;gap:8px}
+details.mo{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+details.mo>summary{list-style:none;cursor:pointer;padding:11px 15px;font-size:15px;font-weight:700;
+  color:var(--ink);display:flex;align-items:center;gap:9px;background:#fafbfd}
+details.mo>summary::-webkit-details-marker{display:none}
+.mo .cnt{font-size:12.5px;font-weight:600;color:var(--muted);margin-left:auto}
+.mo .list{margin:0;padding:10px 12px}
 </style></head><body><div class="wrap">
 <header class="doc">
 <h1>Сводки ЕДДС · архив за все дни</h1>
 <div class="sub">МКУ «СолнСпас» г.о. Солнечногорск · всего дней в архиве: 3</div>
 </header>
+<div class="tree">
+<details class="yr" open><summary><span class="caret"></span>2026 год<span class="cnt">3 дн.</span></summary>
+<div class="months">
+<details class="mo" open><summary><span class="caret"></span>Июнь<span class="cnt">3 дн.</span></summary>
 <div class="list">
 <div class="row latest">
 <div class="dt"><div class="d">3 июня 2026</div><div class="w">среда</div></div>
@@ -80,6 +103,8 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 <a href="analytics-2026-06-01.html">Аналитика</a>
 </div>
 </div>
+</div></details>
+</div></details>
 </div>
 <p class="foot">Архив формируется автоматически из ежедневных сводок ЕДДС МКУ «СолнСпас».</p>
 </div></body></html>

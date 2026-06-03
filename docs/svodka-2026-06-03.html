@@ -81,6 +81,22 @@ section.card > h2 { margin:0 0 14px; font-size:18px; color:var(--brand);
 .info-note .info-ul { margin:0; padding-left:18px; font-size:14px; color:var(--ink); }
 .info-note .info-ul li { margin:2px 0; }
 .info-note .info-sub { font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }
+/* Красная плашка смертельного случая */
+.fatal-alert { margin:16px 0 8px; background:#fdecea; border:1.5px solid #e7a59d;
+  border-left:6px solid var(--red); border-radius:12px; padding:14px 18px;
+  box-shadow:0 1px 4px rgba(192,57,43,.12); }
+.fatal-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+.fatal-ic { flex:0 0 auto; width:26px; height:26px; background:var(--red);
+  border-radius:7px; padding:3px; box-sizing:border-box; }
+.fatal-h { font-weight:800; font-size:16px; color:var(--red); letter-spacing:.2px; }
+.fatal-badge { margin-left:auto; background:var(--red); color:#fff; font-weight:700;
+  font-size:12.5px; padding:3px 11px; border-radius:20px; white-space:nowrap; }
+.fatal-list { margin:6px 0 0; padding-left:0; list-style:none; }
+.fatal-list li { background:#fff; border:1px solid #f0c8c2; border-radius:9px;
+  padding:9px 12px; margin:7px 0; }
+.fatal-meta { display:block; font-size:11.5px; font-weight:700; color:#a23529;
+  text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+.fatal-txt { font-size:14px; color:#3a1f1c; line-height:1.5; }
 .neva-card { margin:16px 0 6px; background:#fdf3ec; border:1px solid #f0cdb4;
   border-left:5px solid #d9742b; border-radius:12px; padding:15px 18px; }
 .neva-card .neva-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
@@ -161,11 +177,10 @@ details.det { margin-top:16px; }
 details.det > summary { cursor:pointer; font-size:13.5px; color:var(--brand);
   font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }
 details.det > summary::-webkit-details-marker { display:none; }
-details.det > summary::before { content:''; flex:0 0 auto; width:0; height:0;
-  border-style:solid; border-width:5px 0 5px 8px;
-  border-color:transparent transparent transparent var(--brand);
-  transition:transform .15s ease; }
-details.det[open] > summary::before { transform:rotate(90deg); }
+.det-caret { display:inline-block; flex:0 0 auto; width:8px; height:8px;
+  border-right:2px solid var(--brand); border-bottom:2px solid var(--brand);
+  transform:rotate(-45deg); transition:transform .15s ease; margin-top:-2px; }
+details.det[open] > summary .det-caret { transform:rotate(45deg); margin-top:-4px; }
 .term.done { color:var(--green); font-weight:600; }
 .tech-tbl { table-layout:fixed; }
 .tech-tbl td { word-break:break-word; overflow-wrap:anywhere; }
@@ -201,6 +216,7 @@ details.det[open] > summary::before { transform:rotate(90deg); }
   <div class="metric green"><div class="v">11</div><div class="l">Выездов СОЛН СПАС</div></div>
 </div>
 
+<div class="fatal-alert" role="alert"><div class="fatal-top"><svg class="fatal-ic" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2 L22 20 H2 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8.5 V13.5" stroke="#c0392b" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.25" fill="#c0392b"/></svg><div class="fatal-h">ВНИМАНИЕ: смертельный случай</div><div class="fatal-badge">1 случай</div></div><ul class="fatal-list"><li><span class="fatal-meta">Происшествия · Происшествия</span><div class="fatal-txt">02.06.2026 г. 13:50 г.Солнечногорск, ул. Молодежная, д. **, под. 5- со слов заявителя, в результате падения с высоты погибла женщина 40 лет. Обстоятельства устанавливаются.</div></li></ul></div>
 <div class="neva-card"><div class="neva-top"><svg class="neva-ic" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 9c0-3 2.2-5 5-5 2.4 0 3.6 1.3 4 2.6" stroke="#d9742b" stroke-width="1.8" stroke-linecap="round"/><path d="M14 7c1.2 0 2 .9 2 2 0 1.6-1.4 2.4-1.4 4 0 1.3 1 2.4 2.4 2.4" stroke="#d9742b" stroke-width="1.8" stroke-linecap="round"/><path d="M5.5 13.5c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" stroke-width="1.6" stroke-linecap="round"/><path d="M5.5 17c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" stroke-width="1.6" stroke-linecap="round"/></svg><div class="neva-h">Обращения по запаху с КПО «Нева»</div></div><div class="neva-nums"><div class="neva-pill"><div class="pv">2</div><div class="pl">На ЕДДС (поимённые обращения)</div></div><div class="neva-pill ctx"><div class="pv">8</div><div class="pl">«Экология» на горячей линии Главы<br><i>справочно, без детализации</i></div></div></div><div class="neva-dyn"><span class="d-flat">как вчера</span> · как обычно</div><div class="neva-sub">Считаются только детальные обращения раздела ЕДДС (подраздел «Экология») с упоминанием «Нева» — сами обращения см. в разделе «Технологические нарушения». Показатель горячей линии дан для контекста и не приравнивается к «Нева».</div></div>
 <div class="dyn dyn-good"><div class="dyn-head">За сутки обстановка спокойнее предыдущего дня</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">6</div><div class="d-cmp"><span class="d-good">▼ -1 к вчера</span> · <span class="d-good">-3 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">6</div><div class="d-cmp"><span class="d-good">▼ -1 к вчера</span> · <span class="d-good">-4 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">152</div><div class="d-cmp"><span class="d-good">▼ -1 к вчера</span> · <span class="d-bad">+40 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">762</div><div class="d-cmp"><span class="d-bad">▲ +32 к вчера</span> · <span class="d-bad">+104 к ср.7дн</span></div></div></div><a class="dyn-link" href="analytics-2026-06-03.html">Подробная аналитика и графики →</a></div>
 <nav class="toc">
@@ -254,7 +270,7 @@ details.det[open] > summary::before { transform:rotate(90deg); }
 <div class="res-pill res-Газ"><span class="rn">2</span> Газ</div>
 <div class="res-pill res-Экология"><span class="rn">2</span> Экология</div>
 </div>
-<details class="det" open><summary>Детализация (6 шт.)</summary>
+<details class="det" open><summary><span class="det-caret"></span>Детализация (6 шт.)</summary>
 <table class="tech-tbl"><colgroup><col style="width:120px"><col><col style="width:96px"></colgroup><thead><tr><th>Ресурс / время</th><th>Что и где</th><th>Статус</th></tr></thead><tbody>
 <tr><td style="white-space:nowrap"><span class="res-tag res-ГВС">ГВС</span><br><span class="term">02.06.2026г 08:00</span></td><td>В связи с проведением аварийно-восстановительных работ ООО «Жилремстрой» ограничена подача теплоносителя по следующим адресам: ПГТ Голубое, Тверецкий проезд, д.**,16/2,16/3,17,19,20,21. Ул. Трехсвятская, д.**, д.**. Всего 9 МКД. Исполнитель: ООО &quot; Жилремстрой&quot;.</td><td class="term done">11:20</td></tr>
 <tr><td style="white-space:nowrap"><span class="res-tag res-ХВС">ХВС</span><br><span class="term">02.06.2026г 10:30</span></td><td>В связи с проведением внеплановых работ на сетях ХВС г.о. Солнечногорск, ул. Пролетарская д.**, прекращена подача ХВС по следующим адресам: г.о. Солнечногорск: ул. Горького, Большевистская, Октябрьский переулок, кот. ККПиБ. Исполнитель: ГУП МО «Солнечногорский ЖКХ»</td><td class="term done">12:10</td></tr>
