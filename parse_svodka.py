@@ -311,6 +311,85 @@ def parse(path):
         "hotline_eco_count": hotline_eco,    # справочно: "Экология" горячей линии Главы
     }
 
+    # --- Детекция смертельных случаев (подсветка красным) ---
+    # Ищем признаки гибели людей во всех текстах: происшествия (вкл. ДТП),
+    # их события и технологические нарушения. Словоформы разные, поэтому
+    # ловим по корням. Исключаем «без пострадавших / погибших нет».
+    FATAL_RE = re.compile(
+        r"(?:погиб|погибш|смертельн|со\s*смертельн|летальн|скончал|"
+        r"труп|обнаружен[аоы]?\s+мёртв|обнаружен[аоы]?\s+мертв|мёртв|мертв|"
+        r"самоубийств|убийств|утону|гибел[ьи])",
+        re.IGNORECASE,
+    )
+    # фразы-опровержения, при которых совпадение НЕ считается летальным
+    NEG_RE = re.compile(
+        r"(?:погибш\w*\s+нет|без\s+погибш|жертв\s+нет|без\s+жертв|"
+        r"пострадавш\w*\s+нет|без\s+пострадавш|никто\s+не\s+погиб)",
+        re.IGNORECASE,
+    )
+
+    def _is_fatal(text):
+        if not text:
+            return False
+        if NEG_RE.search(text):
+            return False
+        return bool(FATAL_RE.search(text))
+
+    def _count_val(raw):
+        """Счётчик категории в число. 'нет'/'-'/'' → 0."""
+        s = str(raw or "").strip().lower()
+        if s in ("", "-", "–", "нет", "отсутствует", "0"):
+            return 0
+        m = re.search(r"\d+", s)
+        return int(m.group()) if m else 0
+
+    # Категории-счётчики, означающие гибель людей (по точному имени типа)
+    FATAL_COUNTERS = ("погибло", "утонуло", "убийств", "самоубийств")
+
+    fatal_items = []
+    seen_texts = set()
+
+    def _add(section, itype, text, **extra):
+        key = (section, (text or "").strip()[:80])
+        if key in seen_texts:
+            return
+        seen_texts.add(key)
+        rec = {"section": section, "type": itype, "text": text}
+        rec.update(extra)
+        fatal_items.append(rec)
+
+    # 1) происшествия: (а) счётчики «Погибло/Утонуло/Убийство/Самоубийства» > 0;
+    #    (б) текстовые упоминания гибели в описаниях событий.
+    for inc in data.get("incidents", []):
+        itype = (inc.get("type", "") or "").strip()
+        low_t = itype.lower()
+        evs = inc.get("events") or []
+        # (а) счётчики гибели
+        if any(low_t.startswith(c) for c in FATAL_COUNTERS):
+            n = _count_val(inc.get("count"))
+            if n > 0:
+                detail = "; ".join(e for e in evs if e) if evs else ""
+                _add("incidents", itype, f"{itype}: {n}" + (f" — {detail}" if detail else ""),
+                     count=n, counter=True)
+            continue
+        # (б) текстовые описания (пропускаем голые «См. раздел …»)
+        for ev in evs:
+            if "см. раздел" in ev.lower():
+                continue
+            if _is_fatal(ev):
+                _add("incidents", itype, ev)
+    # 2) технологические нарушения
+    for v in data.get("tech_violations", []):
+        desc = v.get("desc") or ""
+        if _is_fatal(desc):
+            _add("tech", v.get("resource", ""), desc, datetime=v.get("datetime", ""))
+
+    data["fatal"] = {
+        "has": len(fatal_items) > 0,
+        "count": len(fatal_items),
+        "items": fatal_items,
+    }
+
     return data
 
 
