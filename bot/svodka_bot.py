@@ -152,8 +152,22 @@ def git_publish(commit_msg: str) -> tuple[bool, str]:
             return True, "изменений нет (уже опубликовано)"
         subprocess.run(["git", "-C", GIT_REPO, "commit", "-m", commit_msg],
                        check=True, capture_output=True, text=True)
-        push = subprocess.run(["git", "-C", GIT_REPO, "push", "origin", "HEAD"],
-                              check=True, capture_output=True, text=True)
+
+        # Перед push подтягиваем удалённые коммиты (например, правки кода,
+        # сделанные напрямую на GitHub) — иначе push отклоняется «fetch first».
+        # Пробуем push, и если отклонён — делаем merge-pull и повторяем (1 раз).
+        def _try_push():
+            return subprocess.run(["git", "-C", GIT_REPO, "push", "origin", "HEAD"],
+                                  capture_output=True, text=True)
+        push = _try_push()
+        if push.returncode != 0:
+            # подтягиваем удалённые изменения слиянием (без ребейза)
+            subprocess.run(["git", "-C", GIT_REPO, "pull", "--no-rebase",
+                            "--no-edit", "origin", "HEAD"],
+                           check=True, capture_output=True, text=True)
+            push = _try_push()
+        if push.returncode != 0:
+            return False, (push.stderr or push.stdout or "push failed")[-500:]
         return True, "опубликовано"
     except subprocess.CalledProcessError as e:
         return False, (e.stderr or e.stdout or str(e))[-500:]
