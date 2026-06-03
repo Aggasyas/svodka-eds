@@ -103,8 +103,26 @@ class MaxBot:
 
 
 # ---------------- разбор обновлений ----------------
+def _extract_files(body: dict):
+    """Вытащить файлы-вложения из MessageBody (body или link.message)."""
+    out = []
+    for att in (body or {}).get("attachments", []) or []:
+        if att.get("type") == "file":
+            payload = att.get("payload", {}) or {}
+            out.append({
+                "filename": att.get("filename") or "file.xlsx",
+                "size": att.get("size"),
+                "url": payload.get("url"),
+                "token": payload.get("token"),
+            })
+    return out
+
+
 def iter_message_created(updates: dict):
-    """Из ответа /updates вернуть события message_created в удобном виде."""
+    """Из ответа /updates вернуть события message_created в удобном виде.
+
+    Учитывает ПЕРЕСЛАННЫЕ сообщения (forward): у них файл лежит
+    в message.link.message.attachments, а message.body может быть пустым."""
     for u in updates.get("updates", []):
         if u.get("update_type") != "message_created":
             continue
@@ -112,23 +130,22 @@ def iter_message_created(updates: dict):
         rec = msg.get("recipient", {}) or {}
         sender = msg.get("sender", {}) or {}
         body = msg.get("body", {}) or {}
-        files = []
-        for att in body.get("attachments", []) or []:
-            if att.get("type") == "file":
-                payload = att.get("payload", {}) or {}
-                files.append({
-                    "filename": att.get("filename") or "file.xlsx",
-                    "size": att.get("size"),
-                    "url": payload.get("url"),
-                    "token": payload.get("token"),
-                })
+        link = msg.get("link", {}) or {}
+        link_body = link.get("message", {}) or {}
+
+        # Файлы берём и из самого сообщения, и из пересланного/ответного.
+        files = _extract_files(body) + _extract_files(link_body)
+        # Текст — из body, а если пусто (чистый forward), то из пересланного.
+        text = (body.get("text") or link_body.get("text") or "")
+
         yield {
             "chat_id": rec.get("chat_id"),
             "chat_type": rec.get("chat_type"),
             "user_id": sender.get("user_id") or rec.get("user_id"),
             "sender_name": sender.get("name", ""),
-            "text": body.get("text", "") or "",
+            "text": text,
             "files": files,
+            "is_forward": link.get("type") == "forward",
         }
 
 
