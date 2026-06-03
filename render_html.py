@@ -482,11 +482,10 @@ details.det {{ margin-top:16px; }}
 details.det > summary {{ cursor:pointer; font-size:13.5px; color:var(--brand);
   font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }}
 details.det > summary::-webkit-details-marker {{ display:none; }}
-details.det > summary::before {{ content:''; flex:0 0 auto; width:0; height:0;
-  border-style:solid; border-width:5px 0 5px 8px;
-  border-color:transparent transparent transparent var(--brand);
-  transition:transform .15s ease; }}
-details.det[open] > summary::before {{ transform:rotate(90deg); }}
+.det-caret {{ display:inline-block; flex:0 0 auto; width:8px; height:8px;
+  border-right:2px solid var(--brand); border-bottom:2px solid var(--brand);
+  transform:rotate(-45deg); transition:transform .15s ease; margin-top:-2px; }}
+details.det[open] > summary .det-caret {{ transform:rotate(45deg); margin-top:-4px; }}
 .term.done {{ color:var(--green); font-weight:600; }}
 .tech-tbl {{ table-layout:fixed; }}
 .tech-tbl td {{ word-break:break-word; overflow-wrap:anywhere; }}
@@ -613,7 +612,7 @@ details.det[open] > summary::before {{ transform:rotate(90deg); }}
             parts.append(f'<div class="res-pill res-{esc(r)}"><span class="rn">{res_count[r]}</span> {esc(label)}</div>')
         parts.append('</div>')
         # 3) детали — компактная таблица с сокращёнными описаниями
-        parts.append('<details class="det" open><summary>Детализация ({} шт.)</summary>'.format(n_total))
+        parts.append('<details class="det" open><summary><span class="det-caret"></span>Детализация ({} шт.)</summary>'.format(n_total))
         parts.append('<table class="tech-tbl"><colgroup><col style="width:120px"><col><col style="width:96px"></colgroup>'
                      '<thead><tr><th>Ресурс / время</th><th>Что и где</th><th>Статус</th></tr></thead><tbody>')
         order2 = [r for r in RESOURCE_ORDER if r in tech_by_res] + [r for r in tech_by_res if r not in RESOURCE_ORDER]
