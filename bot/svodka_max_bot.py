@@ -60,6 +60,9 @@ ALLOWED_CHAT_IDS = {
 }
 _report = os.environ.get("REPORT_CHAT_ID", "").strip()
 REPORT_CHAT_ID = int(_report) if _report.lstrip("-").isdigit() else None
+# Доп. чат (обычно личка), куда ДУБЛИРУЕТСЯ финальное сообщение со ссылками.
+_extra = os.environ.get("EXTRA_REPORT_CHAT_ID", "").strip()
+EXTRA_REPORT_CHAT_ID = int(_extra) if _extra.lstrip("-").isdigit() else None
 
 NAME_FILTER = re.compile(os.environ.get("NAME_FILTER", r"svodka.*\.docx$"), re.IGNORECASE)
 
@@ -260,6 +263,10 @@ def handle_event(ev):
     else:
         body += f"\n\n📄 {url_svodka(date)}\n📊 {url_analytics(date)}\n🗂 {url_index()}"
     reply(report_target_ev, body, buttons=buttons)
+    # Дублируем финальное сообщение со ссылками в доп. чат (личку),
+    # если он задан и это не тот же самый чат, куда уже отправили.
+    if EXTRA_REPORT_CHAT_ID and EXTRA_REPORT_CHAT_ID != report_target_ev.get("chat_id"):
+        reply({"chat_id": EXTRA_REPORT_CHAT_ID}, body, buttons=buttons)
 
 
 def _cmd_last(ev):
