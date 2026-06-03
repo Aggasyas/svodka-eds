@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 bot/.env
 .env
+bot/.env.max
+.env.max
