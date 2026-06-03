@@ -6,11 +6,14 @@
 краткой оценкой дня и ключевыми числами.
 """
 import sys, json, html, argparse
+from collections import OrderedDict
 from datetime import datetime
 from metrics import load_history, compare, verdict
 
 MONTHS = ["", "января", "февраля", "марта", "апреля", "мая", "июня",
           "июля", "августа", "сентября", "октября", "ноября", "декабря"]
+MONTHS_NOM = ["", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+              "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 WDAYS = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
 
 BANNER_KPI = ["inc_total", "tech_total", "appeals_total", "calls_112"]
@@ -101,6 +104,25 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}}
 .tag-demo{{font-size:10.5px;color:var(--muted);background:#eef2f7;padding:1px 7px;border-radius:6px;margin-left:6px}}
 .foot{{text-align:center;color:#9aa4b2;font-size:12px;margin-top:24px}}
 @media(max-width:680px){{.links{{margin-left:0;width:100%}}.dt{{min-width:auto}}}}
+
+/* Навигация год → месяц → дни */
+.tree{{margin-top:18px;display:flex;flex-direction:column;gap:12px}}
+details.yr{{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}}
+details.yr>summary{{list-style:none;cursor:pointer;padding:14px 18px;
+  font-size:18px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:10px;
+  background:var(--brand-soft)}}
+details.yr>summary::-webkit-details-marker{{display:none}}
+.caret{{display:inline-block;width:9px;height:9px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s ease;flex:0 0 auto;margin-top:-2px}}
+details[open]>summary .caret{{transform:rotate(45deg);margin-top:-4px}}
+.yr .cnt{{font-size:13px;font-weight:600;color:var(--muted);margin-left:auto}}
+.months{{padding:8px 12px 14px;display:flex;flex-direction:column;gap:8px}}
+details.mo{{border:1px solid var(--line);border-radius:11px;overflow:hidden}}
+details.mo>summary{{list-style:none;cursor:pointer;padding:11px 15px;font-size:15px;font-weight:700;
+  color:var(--ink);display:flex;align-items:center;gap:9px;background:#fafbfd}}
+details.mo>summary::-webkit-details-marker{{display:none}}
+.mo .cnt{{font-size:12.5px;font-weight:600;color:var(--muted);margin-left:auto}}
+.mo .list{{margin:0;padding:10px 12px}}
 </style></head><body><div class="wrap">""")
 
     P.append(f"""<header class="doc">
@@ -108,8 +130,7 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}}
 <div class="sub">МКУ «СолнСпас» г.о. Солнечногорск · всего дней в архиве: {len(rows)}</div>
 </header>""")
 
-    P.append('<div class="list">')
-    for r in rows:
+    def day_card(r):
         d = r["date"]
         vd_cls, has = day_verdict(history, d)
         vd_txt = {"bad": "напряжённее", "good": "спокойнее", "neutral": "в норме"}[vd_cls]
@@ -117,7 +138,7 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}}
             vd_txt = "первый день"
         demo = '<span class="tag-demo">демо</span>' if r.get("_demo") else ""
         latest_cls = " latest" if d == latest else ""
-        P.append(f"""<div class="row{latest_cls}">
+        return f"""<div class="row{latest_cls}">
 <div class="dt"><div class="d">{esc(long_date(d))}{demo}</div><div class="w">{esc(wday(d))}</div></div>
 <div class="vd {vd_cls}">{esc(vd_txt)}</div>
 <div class="nums">
@@ -130,7 +151,39 @@ padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}}
 <a class="primary" href="svodka-{esc(d)}.html">Сводка</a>
 <a href="analytics-{esc(d)}.html">Аналитика</a>
 </div>
-</div>""")
+</div>"""
+
+    # Группировка: год → месяц → дни (всё новое сверху)
+    tree = OrderedDict()
+    for r in rows:
+        try:
+            dt = datetime.strptime(r["date"], "%Y-%m-%d")
+        except Exception:
+            continue
+        tree.setdefault(dt.year, OrderedDict()).setdefault(dt.month, []).append(r)
+
+    latest_year = max(tree) if tree else None
+    latest_month = max(tree[latest_year]) if latest_year else None
+
+    P.append('<div class="tree">')
+    for y in sorted(tree, reverse=True):
+        y_days = sum(len(v) for v in tree[y].values())
+        y_open = " open" if y == latest_year else ""
+        P.append(f'<details class="yr"{y_open}><summary>'
+                 f'<span class="caret"></span>{y} год'
+                 f'<span class="cnt">{y_days} дн.</span></summary>')
+        P.append('<div class="months">')
+        for m in sorted(tree[y], reverse=True):
+            recs = sorted(tree[y][m], key=lambda r: r["date"], reverse=True)
+            m_open = " open" if (y == latest_year and m == latest_month) else ""
+            P.append(f'<details class="mo"{m_open}><summary>'
+                     f'<span class="caret"></span>{MONTHS_NOM[m]}'
+                     f'<span class="cnt">{len(recs)} дн.</span></summary>')
+            P.append('<div class="list">')
+            for r in recs:
+                P.append(day_card(r))
+            P.append('</div></details>')
+        P.append('</div></details>')
     P.append('</div>')
 
     P.append('<p class="foot">Архив формируется автоматически из ежедневных сводок ЕДДС МКУ «СолнСпас».</p>')
