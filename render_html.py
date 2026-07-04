@@ -567,6 +567,39 @@ details.det[open] > summary .det-caret {{ transform:rotate(45deg); margin-top:-4
   .grid2 {{ grid-template-columns:1fr; }}
   .summary-row {{ flex-direction:row; }}
 }}
+/* Узкие экраны (сложенная раскладушка): таблица нарушений -> карточки */
+@media (max-width:560px) {{
+  .tech-tbl {{ table-layout:auto; border:0; }}
+  .tech-tbl colgroup, .tech-tbl thead {{ display:none; }}
+  .tech-tbl tbody, .tech-tbl tr, .tech-tbl td {{ display:block; width:auto; }}
+  .tech-tbl tr {{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+    margin:0 0 8px;
+    background:var(--card);
+  }}
+  .tech-tbl td {{
+    border:0 !important;
+    padding:2px 0 !important;
+    text-align:left !important;
+    font-size:13.5px !important;
+    line-height:1.5;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+  }}
+  .tech-tbl td::before {{
+    content:attr(data-label);
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-bottom:1px;
+  }}
+  .tech-tbl td.c-status {{ margin-top:2px; }}
+}}
 </style>
 </head>
 <body>
@@ -705,9 +738,9 @@ details.det[open] > summary .det-caret {{ transform:rotate(45deg); margin-top:-4
                 term_txt = badge
                 dt = t.get("datetime", "").replace("\n", " ")
                 label = RES_LABEL.get(res, res)
-                parts.append(f'<tr><td style="white-space:nowrap"><span class="res-tag res-{esc(res)}">{esc(label)}</span><br><span class="term">{esc(dt)}</span></td>'
-                             f'<td>{m(shorten(t.get("desc","")))}</td>'
-                             f'<td class="{term_cls}"{title_attr}>{esc(term_txt)}</td></tr>')
+                parts.append(f'<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-{esc(res)}">{esc(label)}</span> <span class="term">{esc(dt)}</span></td>'
+                             f'<td class="c-what" data-label="Что и где">{m(shorten(t.get("desc","")))}</td>'
+                             f'<td class="{term_cls} c-status" data-label="Статус"{title_attr}>{esc(term_txt)}</td></tr>')
         parts.append("</tbody></table></details>")
     else:
         parts.append('<div class="note-ok">Технологических нарушений не зафиксировано.</div>')
