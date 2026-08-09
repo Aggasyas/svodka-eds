@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сводка ЕДДС · </title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2301696F'/%3E%3Cpath d='M32 8 L52 16 V32 C52 45 43 53 32 57 C21 53 12 45 12 32 V16 Z' fill='%23ffffff'/%3E%3Cpath d='M30 18 h4 v10 h10 v4 h-10 v10 h-4 v-10 h-10 v-4 h10 z' fill='%2301696F'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg:#f4f6f9; --card:#ffffff; --ink:#1a2230; --muted:#6b7686;
+  --line:#e3e8ef; --brand:#1b4f8a; --brand-soft:#eaf1fa;
+  --red:#c0392b; --amber:#c77700; --green:#1f7a4d; --blue:#1b4f8a;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial,sans-serif;
+  font-size:15px; line-height:1.55; }
+.wrap { max-width:980px; margin:0 auto; padding:20px 16px 64px; }
+header.doc { background:var(--brand); color:#fff; border-radius:14px;
+  padding:22px 26px; box-shadow:0 6px 20px rgba(27,79,138,.18); }
+header.doc .org { font-size:13px; opacity:.92; letter-spacing:.02em; }
+header.doc h1 { margin:8px 0 4px; font-size:24px; letter-spacing:.01em; }
+header.doc .period { font-size:15px; opacity:.95; }
+header.doc .asof { font-size:13px; opacity:.85; margin-top:4px; }
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:18px 0 6px; }
+.metric { background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; }
+.metric .v { font-size:28px; font-weight:700; line-height:1; }
+.metric .l { font-size:12.5px; color:var(--muted); margin-top:6px; }
+.metric.red .v { color:var(--red); } .metric.blue .v { color:var(--blue); }
+.metric.green .v { color:var(--green); } .metric.amber .v { color:var(--amber); }
+nav.page-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 2px; }
+nav.page-tabs a { font-size:13.5px; font-weight:600; text-decoration:none;
+  padding:8px 16px; border-radius:10px; border:1px solid var(--line);
+  background:var(--card); color:var(--brand); }
+nav.page-tabs a.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+nav.page-tabs a:hover { background:#dbe7f7; }
+nav.page-tabs a.active:hover { background:var(--brand); }
+.dyn { margin-top:16px; border-radius:14px; padding:16px 20px;
+  border:1px solid var(--line); background:var(--card); }
+.dyn-bad { background:#fdeeec; border-color:#f3cdc7; }
+.dyn-good { background:#e9f7ef; border-color:#c7ecd6; }
+.dyn-neutral { background:var(--brand-soft); border-color:#cfe0f3; }
+.dyn-head { font-size:16px; font-weight:700; margin-bottom:12px; }
+.dyn-bad .dyn-head { color:var(--red); }
+.dyn-good .dyn-head { color:var(--green); }
+.dyn-neutral .dyn-head { color:var(--brand); }
+.dyn-chips { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.d-chip { background:rgba(255,255,255,.7); border:1px solid var(--line);
+  border-radius:10px; padding:10px 12px; }
+.d-l { font-size:12px; color:var(--muted); }
+.d-v { font-size:24px; font-weight:700; line-height:1.1; margin:2px 0 3px; color:var(--ink); }
+.d-cmp { font-size:11.5px; color:var(--muted); }
+.d-good { color:var(--green); font-weight:700; }
+.d-bad { color:var(--red); font-weight:700; }
+.d-flat { color:var(--muted); font-weight:600; }
+.dyn-link { display:inline-block; margin-top:12px; font-size:13px; font-weight:600;
+  color:var(--brand); text-decoration:none; }
+.dyn-link:hover { text-decoration:underline; }
+@media(max-width:680px){ .dyn-chips { grid-template-columns:repeat(2,1fr); } }
+nav.toc { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 6px; }
+nav.toc a { font-size:13px; color:var(--brand); text-decoration:none;
+  background:var(--brand-soft); padding:5px 11px; border-radius:20px; }
+nav.toc a:hover { background:#dbe7f7; }
+section.card { background:var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:20px 22px; margin-top:16px; }
+section.card > h2 { margin:0 0 14px; font-size:18px; color:var(--brand);
+  display:flex; align-items:center; gap:9px; padding-bottom:10px;
+  border-bottom:2px solid var(--brand-soft); }
+.badge { font-size:12px; font-weight:600; padding:2px 9px; border-radius:20px;
+  background:var(--brand-soft); color:var(--brand); }
+.note-ok { background:#e9f7ef; border:1px solid #c7ecd6; color:var(--green);
+  padding:11px 14px; border-radius:10px; font-size:14px; }
+.info-note { display:flex; gap:11px; align-items:flex-start; margin-top:14px;
+  background:#eef4fb; border:1px solid #d3e2f3; border-left:4px solid #5b8fd6;
+  padding:12px 15px; border-radius:10px; }
+.info-note .info-ic { flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+  background:#5b8fd6; color:#fff; font-weight:700; font-size:14px; line-height:22px;
+  text-align:center; }
+.info-note .info-h { font-weight:700; font-size:14px; color:#2f5a93; margin-bottom:4px; }
+.info-note .info-ul { margin:0; padding-left:18px; font-size:14px; color:var(--ink); }
+.info-note .info-ul li { margin:2px 0; }
+.info-note .info-sub { font-size:12px; color:#6b7a8d; margin-top:6px; font-style:italic; }
+/* Красная плашка смертельного случая */
+.fatal-alert { margin:16px 0 8px; background:#fdecea; border:1.5px solid #e7a59d;
+  border-left:6px solid var(--red); border-radius:12px; padding:14px 18px;
+  box-shadow:0 1px 4px rgba(192,57,43,.12); }
+.fatal-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+.fatal-ic { flex:0 0 auto; width:26px; height:26px; background:var(--red);
+  border-radius:7px; padding:3px; box-sizing:border-box; }
+.fatal-h { font-weight:800; font-size:16px; color:var(--red); letter-spacing:.2px; }
+.fatal-badge { margin-left:auto; background:var(--red); color:#fff; font-weight:700;
+  font-size:12.5px; padding:3px 11px; border-radius:20px; white-space:nowrap; }
+.fatal-list { margin:6px 0 0; padding-left:0; list-style:none; }
+.fatal-list li { background:#fff; border:1px solid #f0c8c2; border-radius:9px;
+  padding:9px 12px; margin:7px 0; }
+.fatal-meta { display:block; font-size:11.5px; font-weight:700; color:#a23529;
+  text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+.fatal-txt { font-size:14px; color:#3a1f1c; line-height:1.5; }
+.neva-card { margin:16px 0 6px; background:#fdf3ec; border:1px solid #f0cdb4;
+  border-left:5px solid #d9742b; border-radius:12px; padding:15px 18px; }
+.neva-card .neva-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.neva-card .neva-ic { flex:0 0 auto; width:30px; height:30px; }
+.neva-card .neva-h { font-weight:800; font-size:15.5px; color:#9c4a12; }
+.neva-card .neva-nums { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:6px; }
+.neva-card .neva-pill { background:#fff; border:1px solid #f0cdb4; border-radius:10px;
+  padding:9px 14px; min-width:120px; }
+.neva-card .neva-pill .pv { font-size:24px; font-weight:800; color:#c4571a; line-height:1; }
+.neva-card .neva-pill .pl { font-size:12px; color:#7a6a5d; margin-top:4px; }
+.neva-card .neva-pill.ctx .pv { color:#9a8576; }
+.neva-card .neva-list { margin:8px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink); }
+.neva-card .neva-list li { margin:3px 0; }
+.neva-card .neva-list .nt { color:#9c4a12; font-weight:600; }
+.neva-card .neva-sub { font-size:12px; color:#8a7a6d; margin-top:8px; font-style:italic; }
+.neva-card .neva-zero { font-size:14px; color:#5a7a5a; }
+.neva-card .neva-dyn { font-size:13.5px; margin-top:2px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th, td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line);
+  vertical-align:top; }
+th { background:#f7f9fc; color:var(--muted); font-weight:600; font-size:12.5px;
+  text-transform:uppercase; letter-spacing:.03em; }
+tr:last-child td { border-bottom:none; }
+.cnt { display:inline-block; min-width:24px; text-align:center; font-weight:700;
+  color:#fff; background:var(--red); border-radius:7px; padding:1px 7px; font-size:13px; }
+.inc-block { margin-bottom:14px; }
+.inc-block h3 { margin:0 0 6px; font-size:15px; display:flex; gap:8px; align-items:center; }
+.inc-block ul { margin:0; padding-left:18px; }
+.inc-block li { margin:5px 0; color:#33404f; }
+.res-tag { display:inline-block; font-size:11.5px; font-weight:700; padding:2px 8px;
+  border-radius:6px; margin-right:6px; background:#eef2f7; color:#445; }
+.res-ГВС,.res-ХВС { background:#e7f0fb; color:#1b4f8a; }
+.res-Газ { background:#fdeee0; color:#b56400; }
+.res-Экология { background:#e9f7ef; color:#1f7a4d; }
+.res-Канализация { background:#f1eafc; color:#6b3fa0; }
+.term { font-size:12.5px; color:var(--muted); white-space:nowrap; }
+.term.work { color:var(--amber); font-weight:600; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.water-card { border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.water-card .post { font-weight:600; font-size:13.5px; margin-bottom:6px; }
+.water-card .lvl { display:flex; justify-content:space-between; font-size:13px; }
+.weather-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.weather-grid .wc { border:1px solid var(--line); border-radius:10px; padding:12px; }
+.weather-grid .wc .l { font-size:11.5px; color:var(--muted); text-transform:uppercase; }
+.weather-grid .wc .v { font-size:18px; font-weight:700; margin-top:4px; }
+.warn { border-left:4px solid var(--amber); background:#fdf6ec; padding:10px 14px;
+  border-radius:0 8px 8px 0; margin-bottom:10px; font-size:13.5px; }
+.warn b { color:var(--amber); }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { background:#f7f9fc; border:1px solid var(--line); border-radius:8px;
+  padding:7px 11px; font-size:13px; }
+.chip b { color:var(--brand); }
+footer.sign { margin-top:22px; text-align:right; color:var(--muted); font-size:14px; }
+footer.sign .role { font-size:12.5px; }
+.appeal-row { display:flex; justify-content:space-between; padding:7px 0;
+  border-bottom:1px solid var(--line); font-size:14px; }
+.appeal-row:last-child { border:none; }
+/* Сводные плашки раздела (от общего к частному) */
+.summary-row { display:flex; gap:12px; flex-wrap:wrap; }
+.sb { flex:1; min-width:110px; border:1px solid var(--line); border-radius:11px;
+  padding:12px 16px; background:#fafbfd; }
+.sb .v { font-size:26px; font-weight:700; line-height:1; }
+.sb .l { font-size:12px; color:var(--muted); margin-top:5px; }
+.sb.total { background:var(--brand-soft); border-color:#cfe0f3; }
+.sb.total .v { color:var(--brand); }
+.sb.work { background:#fdf6ec; border-color:#f0dcbd; }
+.sb.work .v { color:var(--amber); }
+.sb.closed { background:#e9f7ef; border-color:#c7ecd6; }
+.sb.closed .v { color:var(--green); }
+.sb.blue .v { color:var(--blue); } .sb.gray .v { color:var(--muted); }
+.res-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.res-pill { display:inline-flex; align-items:center; gap:7px; background:#f4f7fb;
+  border:1px solid var(--line); border-radius:9px; padding:7px 12px; font-size:13.5px; color:#33404f; }
+.res-pill .rn { font-weight:700; color:var(--brand); font-size:15px; }
+.res-pill.alert { background:#fdeeec; border-color:#f3cdc7; }
+.res-pill.alert .rn { color:var(--red); }
+details.det { margin-top:16px; }
+details.det > summary { cursor:pointer; font-size:13.5px; color:var(--brand);
+  font-weight:600; padding:8px 0; list-style:none; display:flex; align-items:center; gap:8px; }
+details.det > summary::-webkit-details-marker { display:none; }
+.det-caret { display:inline-block; flex:0 0 auto; width:8px; height:8px;
+  border-right:2px solid var(--brand); border-bottom:2px solid var(--brand);
+  transform:rotate(-45deg); transition:transform .15s ease; margin-top:-2px; }
+details.det[open] > summary .det-caret { transform:rotate(45deg); margin-top:-4px; }
+.term.done { color:var(--green); font-weight:600; }
+.tech-tbl { table-layout:fixed; }
+.tech-tbl td { word-break:break-word; overflow-wrap:anywhere; }
+.tech-tbl td:nth-child(2) { font-size:13.5px; line-height:1.5; }
+.tech-tbl td:first-child { font-size:12.5px; }
+.tech-tbl th:nth-child(3), .tech-tbl td:nth-child(3) { text-align:center; }
+@media (max-width:680px) {
+  .metrics,.weather-grid { grid-template-columns:repeat(2,1fr); }
+  .grid2 { grid-template-columns:1fr; }
+  .summary-row { flex-direction:row; }
+}
+/* Узкие экраны (сложенная раскладушка): таблица нарушений -> карточки */
+@media (max-width:560px) {
+  .tech-tbl { table-layout:auto; border:0; }
+  .tech-tbl colgroup, .tech-tbl thead { display:none; }
+  .tech-tbl tbody, .tech-tbl tr, .tech-tbl td { display:block; width:auto; }
+  .tech-tbl tr {
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+    margin:0 0 8px;
+    background:var(--card);
+  }
+  .tech-tbl td {
+    border:0 !important;
+    padding:2px 0 !important;
+    text-align:left !important;
+    font-size:13.5px !important;
+    line-height:1.5;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+  }
+  .tech-tbl td::before {
+    content:attr(data-label);
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-bottom:1px;
+  }
+  .tech-tbl td.c-status { margin-top:2px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="doc">
+  <div class="org">МКУ «Аварийно-спасательная служба городского округа Солнечногорск Московской области»</div>
+  <h1>Сводка ЕДДС МКУ «СолнСпас»</h1>
+  <div class="period">по чрезвычайным (аварийным) ситуациям и происшествиям за сутки  г.</div>
+  <div class="asof">по состоянию на 07ч 45мин</div>
+</header>
+<nav class="page-tabs">
+  <a href="index.html">🗂 Все сводки</a>
+  <a class="active" href="svodka-2026-08-08.html">📄 Сводка за день</a>
+  <a href="analytics-2026-08-08.html">📊 Аналитика и динамика</a>
+</nav>
+
+
+<div class="metrics">
+  <div class="metric blue"><div class="v">871</div><div class="l">Вызовов по Системе-112</div></div>
+  <div class="metric blue"><div class="v">80</div><div class="l">Обращений граждан</div></div>
+  <div class="metric amber"><div class="v">8</div><div class="l">Происшествий с событиями</div></div>
+  <div class="metric green"><div class="v">13</div><div class="l">Выездов СОЛН СПАС</div></div>
+</div>
+
+
+<div class="neva-card"><div class="neva-top"><svg class="neva-ic" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 9c0-3 2.2-5 5-5 2.4 0 3.6 1.3 4 2.6" stroke="#d9742b" stroke-width="1.8" stroke-linecap="round"/><path d="M14 7c1.2 0 2 .9 2 2 0 1.6-1.4 2.4-1.4 4 0 1.3 1 2.4 2.4 2.4" stroke="#d9742b" stroke-width="1.8" stroke-linecap="round"/><path d="M5.5 13.5c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" stroke-width="1.6" stroke-linecap="round"/><path d="M5.5 17c1.5 0 1.5 1.6 3 1.6s1.5-1.6 3-1.6" stroke="#e8a06a" stroke-width="1.6" stroke-linecap="round"/></svg><div class="neva-h">Обращения по запаху с КПО «Нева»</div></div><div class="neva-nums"><div class="neva-pill"><div class="pv">5</div><div class="pl">На ЕДДС (поимённые обращения)</div></div><div class="neva-pill ctx"><div class="pv">4</div><div class="pl">«Экология» на горячей линии Главы<br><i>справочно, без детализации</i></div></div></div><div class="neva-dyn"><span class="d-bad">▲ +2 к вчера</span> · <span class="d-bad">+3.1 к ср.7дн</span></div><div class="neva-sub">Считаются только детальные обращения раздела ЕДДС (подраздел «Экология») с упоминанием «Нева» — сами обращения см. в разделе «Технологические нарушения». Показатель горячей линии дан для контекста и не приравнивается к «Нева».</div></div>
+<div class="dyn dyn-good"><div class="dyn-head">За сутки обстановка спокойнее предыдущего дня</div><div class="dyn-chips"><div class="d-chip"><div class="d-l">Происшествий всего</div><div class="d-v">19</div><div class="d-cmp"><span class="d-good">▼ -6 к вчера</span> · <span class="d-good">-1 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Технологич. нарушения</div><div class="d-v">7</div><div class="d-cmp"><span class="d-good">▼ -2 к вчера</span> · <span class="d-good">-2.7 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Обращений граждан</div><div class="d-v">80</div><div class="d-cmp"><span class="d-good">▼ -156 к вчера</span> · <span class="d-good">-119.1 к ср.7дн</span></div></div><div class="d-chip"><div class="d-l">Вызовов по 112</div><div class="d-v">871</div><div class="d-cmp"><span class="d-good">▼ -167 к вчера</span> · <span class="d-good">-154.1 к ср.7дн</span></div></div></div><a class="dyn-link" href="analytics-2026-08-08.html">Подробная аналитика и графики →</a></div>
+<nav class="toc">
+  <a href="#cs">ЧС</a><a href="#inc">Происшествия</a><a href="#fire">Пожары</a>
+  <a href="#tech">Технологич. нарушения</a><a href="#appeals">Обращения</a>
+  <a href="#hotline">Горячая линия Главы</a><a href="#stats">Статистика</a>
+  <a href="#water">Уровни воды</a><a href="#weather">Погода</a>
+</nav>
+<section class="card" id="cs">
+  <h2>Чрезвычайные ситуации</h2>
+  <div class="note-ok">✓ За прошедшие сутки на территории городского округа чрезвычайных ситуаций и крупных аварий не зафиксировано.</div>
+</section>
+<section class="card" id="inc"><h2>Происшествия (преступления)</h2>
+<div class="res-row" style="margin-bottom:14px">
+<div class="res-pill alert"><span class="rn">1</span> Выезды пожарных подразделений</div>
+<div class="res-pill alert"><span class="rn">1</span> Происшествия на воде</div>
+<div class="res-pill alert"><span class="rn">5</span> Происшествия с несовершеннолетними</div>
+<div class="res-pill alert"><span class="rn">1</span> Потерялись в природной/городской среде</div>
+<div class="res-pill alert"><span class="rn">1</span> Обнаружено боеприпасов ВОВ (современных)</div>
+<div class="res-pill alert"><span class="rn">1</span> Происшествия на производстве</div>
+<div class="res-pill alert"><span class="rn">1</span> Другое</div>
+<div class="res-pill alert"><span class="rn">10</span> БПЛА</div>
+</div>
+<div class="inc-block"><h3>Выезды пожарных подразделений <span class="cnt">1</span></h3>
+<ul>
+<li>08.08.2026г. 12:02 д. Бакеево, ул. Ключевая. На улице горит трансформаторная будка. Короткое замыкание, без последующего возгорания. Пострадавших нет. СиС: 1 ед. тех. 3чел.</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Происшествия на воде <span class="cnt">1</span></h3>
+<ul>
+<li>08.08.2026г. 15:20 г. Солнечногорск, городской пляж оз. Сенеж. Сотрудниками АСО МКУ &quot;СолнСпас&quot; оказана первая помощь женщине 34 года, которая при падении с лодки получила травму ноги (рассечение левой голени).</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Происшествия с несовершеннолетними <span class="cnt">5</span></h3>
+<ul>
+<li>08.08.2026г. 12:20 д. Раково, СНТ &quot;Прогресс-96&quot;, вл. 30. Ребенок, 4 года, получил травму головы при падении об лестницу. Информация передана в ЭОС. Сотрудниками СМП доставлен в стационар.</li>
+<li>08.08.2026г. 15:40 д. Бакеево, квартал &quot;Бакеево парк&quot;, корп. 2, кв. 32. Ребенок, 6 лет, на детской площадке ударился об горку. Травма головы. Информация направлена в ЭОС.</li>
+<li>08.08.2026г. 17:38 Октябрьская ж/д, 599 км, в сторону области, станция Поварово. С электропоезда упал зацепер</li>
+<li>07.02.2010г.р. ЗЧМТ, ушиб головного мозга, ушибленная рана теменной части. Госпитализирован в ДНКЦ им. Л.М. Рошаля.</li>
+<li>08.08.2026г. 19:18 г. Солнечногорск, ул. Красная, д.64. На детской площадке, ребенок 3 года, катаясь на самокате наехал на препятствие. Информация направлена в ЭОС. Сотрудниками СМП доставлен в стационар.</li>
+<li>08.08.2026г. 22:11 См. раздел «Потерялись в природной/городской среде».</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Потерялись в природной/городской среде <span class="cnt">1</span></h3>
+<ul>
+<li>08.08.2026г. 22:11 п.г.т. Голубое, Тверецкий пр-д, д. 19, кв. 250. Ребенок, 12.10.2020 г.р, в 16:00 вышла играть на детскую площадку и до настоящего времени не вернулась. Телефона при себе не имеет, ОПДН, Лиза Алерт. 22:40 Нашли самостоятельно. Медицинская помощь не требуется.</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Обнаружено боеприпасов ВОВ (современных) <span class="cnt">1</span></h3>
+<ul>
+<li>Информация от</li>
+<li>06.08.2026г. т.о. Поварово-Соколовское, в 18:44 Копая траншею на своем приусадебном участке д. Повадино, СНТ &quot;Тебеньки&quot; заявитель обнаружил предмет внешне похожий на снаряд времен ВОВ. По прибытии СЭР на место вызова установлено: предмет внешне похож на минометный снаряд времен ВОВ. Место обнаружения снаряда огорожено, обеспечена охрана участка сотрудниками ОМВД. Через военный комиссариат отправлена заявка (№ 4/67) на привлечение специалистов МО для изъятия и уничтожения снаряда. По прибытию на место группы разминирования установлено, что обнаруженный предмет не является боеприпасом. Опасности не представляет.</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Происшествия на производстве <span class="cnt">1</span></h3>
+<ul>
+<li>09.08.2026г. 03:17 г. Солнечногорск, ул. Красная, 2, стр.3 (магазин ВВС), рабочий компании &quot;М-Дисплей&quot;, при смене рекламного щита, упал с высоты 3-4 этажного дома. Информация направлена в ЭОС. Сотрудниками СМП доставлен в стационар.</li>
+</ul>
+</div>
+<div class="inc-block"><h3>Другое <span class="cnt">1</span></h3>
+<ul>
+<li>08.08.2026г.09:48 п. Поваровка, ул. Есенина, д. 13. Напротив дома лежит коробка с какими-то схемами, которая кажется заявителю подозрительной. Информация передана в ЭОС. По информации ОМВД, коробка опасности не представляет.</li>
+</ul>
+</div>
+<div class="inc-block"><h3>БПЛА <span class="cnt">10</span></h3>
+<ul>
+<li>08.08.26г. в 02:07 в ЕДДС г.о. Солнечногорск поступила информация от дежурного Володарской ЛПДС (линейная производственно- диспетчерская станция), о том, что по внутренним каналам «Транснефть» в 02:07 поступил сигнал &quot;Ракетная опасность&quot; и &quot;Беспилотная опасность&quot; на наливной станции &quot;Солнечногорская&quot;. Проводится эвакуация сотрудников. 08:13 отбой сигнала &quot;Ракетная опасность&quot; и &quot;Беспилотная опасность&quot;.</li>
+<li>08.08.2026г. 03:00. По информации от ДСГ в 03.00 объявлен сигнал: &quot;Беспилотная опасность&quot; на территории Московской области.</li>
+<li>09.08.2026г. 06.50 отбой сигнала: &quot;Беспилотная опасность&quot; на территории Московской области.</li>
+<li>08.08.2026г. 11:09. В лесном массиве между мкр. Хоругвино г.о. Солнечногорск и д. Редькино Дмитровского г.о, коор. 56.153667 37.229156, обнаружены обломки БПЛА (два крыла). Разрушений и пострадавших нет. По информации ОМВД - осмотрены ранее, опасности не представляют. Заявитель с места обнаружения убыл. 08.08.26г. в 12:18 в ЕДДС г.о. Солнечногорск поступила информация от дежурного Володарской ЛПДС (линейная производственно- диспетчерская станция), о том, что по внутренним каналам «Транснефть» в 12:10 поступил сигнал &quot;Беспилотная опасность&quot; на наливной станции &quot;Солнечногорская&quot;. Проводится эвакуация сотрудников. 12:35 отбой сигнала &quot;Беспилотная опасность&quot;.</li>
+<li>08.08.2026г. 13:36 т.о. Андреевка, с. Алабушево. В лесном массиве, координаты 56.018014 37.125312, обнаружены обломки БПЛА (крыло). Пострадавших и повреждений нет. Военным комиссариатом подготовлена заявка № 4/69 на привлечение специалистов МО РФ для изъятия и уничтожения обломков БПЛА.</li>
+<li>08.08.2026г. 18:50. т.о. Пешковское, д. Дурыкино, СНТ &quot;Водник&quot; д. 2. БПЛА в сторону д. Алабушево. 09.08.26г. в 01:15 в ЕДДС г.о. Солнечногорск поступила информация от дежурного Володарской ЛПДС (линейная производственно- диспетчерская станция), о том, что по внутренним каналам «Транснефть» в 01:10 поступил сигнал &quot;Беспилотная опасность&quot; на наливной станции &quot;Солнечногорская&quot;. Проводится эвакуация сотрудников. 05:22 отбой сигнала &quot;Беспилотная опасность&quot;. 09.08.2026, 01:26. г. Клин, д. Покровка, СНТ «Дружба СК РУВД». БПЛА в сторону Солнечногорска. 09:08.2026, 01:37. д. Климово, д. 9. БПЛА. В сторону Барское-Мелечкино. 09:08.2026, 01:47. т.о. Кривцовское-Смирновское, д. Замятино, ул. Удачная, 65. БПЛА. В сторону д. Никулино.</li>
+</ul>
+</div>
+</section>
+<section class="card" id="fire"><h2>Пожарная обстановка</h2>
+<p>ПСЧ-267, , 1, , 1, 3</p>
+</section>
+<section class="card" id="tech"><h2>Технологические нарушения</h2>
+<div class="summary-row"><div class="sb total"><div class="v">7</div><div class="l">всего</div></div><div class="sb work"><div class="v">7</div><div class="l">в работе</div></div><div class="sb closed"><div class="v">0</div><div class="l">устранено</div></div></div>
+<div class="res-row">
+<div class="res-pill res-Газ"><span class="rn">1</span> Газ</div>
+<div class="res-pill res-Экология"><span class="rn">6</span> Экология</div>
+</div>
+<details class="det" open><summary><span class="det-caret"></span>Детализация (7 шт.)</summary>
+<table class="tech-tbl"><colgroup><col style="width:120px"><col><col style="width:96px"></colgroup><thead><tr><th>Ресурс / время</th><th>Что и где</th><th>Статус</th></tr></thead><tbody>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Газ">Газ</span> <span class="term">08.08.2026</span></td><td class="c-what" data-label="Что и где">Информация от 05.08.2026г, г. Солнечногорск, ул. Спасская, д. 3, кв. 2. В связи с нарушениями требований по обустройству дымохода от газового водонагревателя, прекращена подача газа жителям 22 квартир. Информация передана в управление ЖКХ администрации г.о. Солнечногорск.</td><td class="term work c-status" data-label="Статус" title="Устраняется силами собственника жилых помещений.">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">08.08.2026, 10:16</span></td><td class="c-what" data-label="Что и где">п. Поварово. Запах с КПО &quot;Нева&quot;. Заявитель: Синькова Елена Сергеевна. Телефон заявителя: 89629004468.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">08.08.2026, 19:16</span></td><td class="c-what" data-label="Что и где">Андреевка д. 40. Вонь с КПО &quot;Нева&quot;. Заявитель: Сидоренкова Татьяна Васильевна. Телефон заявителя: 89296075410.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">08.08.2026, 19:37</span></td><td class="c-what" data-label="Что и где">п. Поварово. Запах с КПО &quot;Нева&quot;. Заявитель: Синькова Елена Сергеевна. Телефон заявителя: 89629004469.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">08.08.2026, 21:32</span></td><td class="c-what" data-label="Что и где">1-й Андреевкий квартал, д.40. Запах с КПО &quot;Нева&quot;. Заявитель: Карпов олег Александрович. Телефон заявителя: 89012841226.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">09.08.2026, 04:51</span></td><td class="c-what" data-label="Что и где">г. Зеленоград, корп. 1625. Запах в КПО &quot;Нева&quot;. Заявитель: Синькова Елена Сергеевна. Телефон заявителя: 89629004468.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+<tr><td class="c-res" data-label="Ресурс / время"><span class="res-tag res-Экология">Экология</span> <span class="term">09.08.2026, 07:21</span></td><td class="c-what" data-label="Что и где">ул. Весенняя, д.7. Запах с КПО &quot;Нева&quot;. Заявитель: Романенкова Екатерина Михайловна. Телефон заявителя: 89055886091.</td><td class="term work c-status" data-label="Статус" title="На контроле управления ЖКХ и экологии">в работе</td></tr>
+</tbody></table></details>
+<div class="info-note"><span class="info-ic">&#8505;</span><div><div class="info-h">Справочно-консультативные обращения</div><ul class="info-ul"><li>В течение суток в адрес ЕДДС поступило 21 сообщение справочного и консультативного характера.</li></ul><div class="info-sub">Информация справочного характера, не является технологическим нарушением.</div></div></div>
+</section>
+<section class="card" id="appeals"><h2>Обращения граждан за сутки</h2>
+<div class="summary-row"><div class="sb total"><div class="v">80</div><div class="l">всего обращений</div></div><div class="sb blue"><div class="v">24</div><div class="l">на горячую линию Главы</div></div><div class="sb gray"><div class="v">871</div><div class="l">вызовов НС-112</div></div></div>
+<div class="l" style="font-size:12.5px;color:var(--muted);margin:14px 0 8px">По тематике:</div><div class="res-row">
+<div class="res-pill"><span class="rn">52</span> Экология</div>
+<div class="res-pill"><span class="rn">21</span> Подтопление</div>
+<div class="res-pill"><span class="rn">6</span> Электроэнергия</div>
+<div class="res-pill"><span class="rn">1</span> ГВС</div>
+</div>
+</section>
+<section class="card" id="hotline"><h2>Горячая линия Главы г.о. Солнечногорск</h2>
+<div class="summary-row"><div class="sb total"><div class="v">24</div><div class="l">всего обращений</div></div><div class="sb blue"><div class="v">6</div><div class="l">активных категорий</div></div></div>
+<div class="res-row" style="margin-top:12px">
+<div class="res-pill"><span class="rn">14</span> Жилищно-коммунальное хозяйство</div>
+<div class="res-pill"><span class="rn">4</span> Экология</div>
+<div class="res-pill"><span class="rn">2</span> Благоустройство</div>
+<div class="res-pill"><span class="rn">2</span> Дорожная инфраструктура</div>
+<div class="res-pill"><span class="rn">1</span> Управление делами</div>
+<div class="res-pill"><span class="rn">1</span> Справочного и консультативного характера</div>
+</div></section>
+<section class="card" id="stats"><h2>Статистика дежурной смены</h2>
+<div class="chips">
+<div class="chip">Поступило в ЕДДС по системе «ИСКРА»: <b>63</b></div>
+<div class="chip">Поступило сообщений в ЕДДС/ звонки на «Горячую линию»: <b>28/24</b></div>
+<div class="chip">Всего поступило вызовов по Системе-112: <b>871</b></div>
+</div>
+<h3 style="font-size:15px;margin:16px 0 8px;color:var(--ink)">Выезды МКУ «СОЛН СПАС»</h3><div class="chips">
+<div class="chip">Всего выездов: <b>13</b></div>
+<div class="chip">ДТП: <b>1</b></div>
+<div class="chip">Вскрытие дверей: <b>1</b></div>
+<div class="chip">Обеспечение проведения мероприятий: <b>7</b></div>
+<div class="chip">Занятия с населением: <b>2</b></div>
+<div class="chip">Спасённые на воде: <b>1</b></div>
+<div class="chip">Поисковые работы: <b>1</b></div>
+</div>
+</section>
+<section class="card" id="water"><h2>Автоматизированные посты уровня воды</h2><div class="grid2">
+<div class="water-card"><div class="post">СНТ «Сестроречье», река Сестра</div><div class="lvl"><span style="color:var(--muted)">«0» поста</span><b>176,450</b></div><div class="lvl"><span style="color:var(--muted)">Актуальный</span><b>176,071</b></div></div>
+<div class="water-card"><div class="post">д. Обухово, река Истра</div><div class="lvl"><span style="color:var(--muted)">«0» поста</span><b>171,800</b></div><div class="lvl"><span style="color:var(--muted)">Актуальный</span><b>171,403</b></div></div>
+<div class="water-card"><div class="post">д. Коньково, река Истра</div><div class="lvl"><span style="color:var(--muted)">«0» поста</span><b>169,500</b></div><div class="lvl"><span style="color:var(--muted)">Актуальный</span><b>169,268</b></div></div>
+<div class="water-card"><div class="post">СНТ «Алексеевское», река Клепца</div><div class="lvl"><span style="color:var(--muted)">«0» поста</span><b>173,500</b></div><div class="lvl"><span style="color:var(--muted)">Актуальный</span><b>172,963</b></div></div>
+</div></section>
+<section class="card" id="weather"><h2>Погода на предстоящие сутки</h2>
+<div class="weather-grid">
+<div class="wc"><div class="l">Температура воздуха днем</div><div class="v">20…25°C</div></div>
+<div class="wc"><div class="l">Температура воздуха ночью</div><div class="v">10…15°C</div></div>
+<div class="wc"><div class="l">Ветер</div><div class="v">Ветер северо-западный, 5-10 м/с.</div></div>
+</div>
+<p style="margin-top:12px;font-size:13.5px">Переменная облачность. Преимущественно без осадков. Атмосферное давление: в пределах 742-745 мм. рт. ст.</p>
+<p style="font-size:13.5px;color:var(--muted)">Опасные метеорологические явления: не прогнозируются. Неблагоприятные метеорологические явления: не прогнозируются</p>
+</section>
+<footer class="sign"><div class="role">Старший дежурный оперативный смены специалистов ЕДДС и Системы–112</div><div><b>С.Ю. Розанов</b></div></footer>
+</div></body></html>
